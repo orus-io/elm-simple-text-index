@@ -11,7 +11,7 @@ is a much more complete alternative.
 ## Quick Start
 
 ```elm
-import SimpleTextIndex exposing (empty, add, search)
+import SimpleTextIndex
 
 
 type alias SampleData =
@@ -28,7 +28,7 @@ indexConfig =
         [ .name
         , .description
         ]
-    , normalize = String.toLower  --  >> String.Normalize.removeDiacritics
+    , normalize = String.toLower --  >> String.Normalize.removeDiacritics
     }
 
 
@@ -40,13 +40,28 @@ sample0 =
     }
 
 
-
-
-main :
+main =
     let
-        index = empty
-            |> add indexConfig sample0
+        -- this would typically be done in a 'init' or 'update' function
+        index =
+            SimpleTextIndex.empty
+                |> SimpleTextIndex.add indexConfig sample0
     in
+    -- And this would be done in the 'view', and would returns `[ sample0 ]`
     search indexConfig "ampl" index
-      -- returns [sample0]
+
 ```
+
+## How fast
+
+I did a few measurements in a in-house application and some benchmarks.
+Although very subjective, here are the results:
+
+Indexing ~10,000 records with little text (firstname & lastname) takes under
+a second in most cases.
+
+Searching a long word is very fast (<3µs), and searching a single letter slower
+(<3ms) but still fast enough for a very responsive auto-suggestion dropbox.
+
+You can run the benchmarks yourself by viewing the 'benchmarks/main.html' file
+in a browser.

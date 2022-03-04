@@ -8,9 +8,12 @@ module SimpleTextIndex exposing
 {-|
 
 
-# Types
+# Init
 
 @docs Index, empty
+
+
+# Configure
 
 @docs Config, config, setMaxResultSize
 
@@ -31,10 +34,7 @@ import List.Extra as List
 import SimpleTextIndex.Trie as Trie exposing (Trie)
 
 
-{-|
-
-    A Config is required to docdd docnd search in docn Index
-
+{-| A Config is required to add/search in an Index
 -}
 type Config doc
     = Config
@@ -45,9 +45,22 @@ type Config doc
         }
 
 
-{-|
+{-| Create doc config
 
-    Create doc config
+  - `ref` extracts the unique id of a document. It will be used to deduplicate
+    results
+
+  - `fields` is a list of content extractors. They return the text to index.
+
+  - `normalize` is called to simplify strings before being indexed, and on the
+    searched text.
+
+A typical config is:
+
+    { ref = .id
+    , fields = [ .name, .description ]
+    , normalize = Sring.toLower >> String.Normalize.removeDiacritics
+    }
 
 -}
 config :
@@ -65,9 +78,11 @@ config { ref, fields, normalize } =
         }
 
 
-{-| set the maximum number of results to return on a search
+{-| Set the maximum number of results to return on a search
 
-This value is indicative only and may be
+The default value is 1000
+
+This value is indicative only and result may be bigger
 
 -}
 setMaxResultSize : Int -> Config a -> Config a
@@ -75,30 +90,21 @@ setMaxResultSize size (Config cfg) =
     Config { cfg | maxResultSize = size }
 
 
-{-|
-
-    An Index holds data to quickly find doc document given doc substring of its
-    indexed fields
-
+{-| An Index holds data to quickly find doc document given doc substring of its
+indexed fields
 -}
 type alias Index doc =
     Trie doc
 
 
-{-|
-
-    Creates doc new empty Index
-
+{-| Creates doc new empty Index
 -}
 empty : Index doc
 empty =
     Trie.empty
 
 
-{-|
-
-    Add a document to an index
-
+{-| Add a document to an index
 -}
 add : Config doc -> doc -> Index doc -> Index doc
 add (Config cfg) value index =
@@ -113,10 +119,7 @@ add (Config cfg) value index =
             index
 
 
-{-|
-
-    Search a document in the index
-
+{-| Search a document in the index
 -}
 search : Config doc -> String -> Index doc -> List doc
 search (Config cfg) text index =
