@@ -43,6 +43,7 @@ type Config doc
         { ref : doc -> String
         , fields : List (doc -> String)
         , normalize : String -> String
+        , maxResultSize : Int
         }
 
 
@@ -57,8 +58,23 @@ config :
     , normalize : String -> String
     }
     -> Config doc
-config =
+config { ref, fields, normalize } =
     Config
+        { ref = ref
+        , fields = fields
+        , normalize = normalize
+        , maxResultSize = 200
+        }
+
+
+{-|
+
+    Set the max number of results when searching
+
+-}
+setMaxResultSize : Int -> Config a -> Config a
+setMaxResultSize size (Config cfg) =
+    Config { cfg | maxResultSize = size }
 
 
 {-|
@@ -106,7 +122,7 @@ add (Config cfg) value index =
 search : Config doc -> String -> Index doc -> List doc
 search (Config cfg) text index =
     String.split " " text
-        |> List.map (\word -> Tree.search word index)
+        |> List.map (\word -> Tree.search cfg.maxResultSize word index)
         |> List.foldl1 (intersectionBy cfg.ref)
         |> Maybe.withDefault []
         |> List.uniqueBy cfg.ref

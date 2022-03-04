@@ -3,7 +3,7 @@ module TestTree exposing (suite)
 import Expect
 import Fuzz
 import Set
-import SimpleTextIndex.Tree exposing (empty, insert, search)
+import SimpleTextIndex.Tree as Tree exposing (Tree, empty, insert, search)
 import Test exposing (Test, describe, fuzz, test)
 
 
@@ -14,34 +14,34 @@ suite =
             \_ ->
                 empty
                     |> insert "hello" "HELLO"
-                    |> search "hel"
+                    |> search 10 "hel"
                     |> Set.fromList
                     |> Expect.equalSets (Set.singleton "HELLO")
         , test "search suffix" <|
             \_ ->
                 empty
                     |> insert "hello" "HELLO"
-                    |> search "lo"
+                    |> search 10 "lo"
                     |> Set.fromList
                     |> Expect.equalSets (Set.singleton "HELLO")
         , test "search substring" <|
             \_ ->
                 empty
                     |> insert "hello" "HELLO"
-                    |> search "ll"
+                    |> search 10 "ll"
                     |> Set.fromList
                     |> Expect.equalSets (Set.singleton "HELLO")
         , fuzz Fuzz.string "insert&search" <|
             \s ->
                 empty
                     |> insert s "HELLO"
-                    |> search s
+                    |> search 1000 s
                     |> Set.fromList
                     |> Expect.equalSets (Set.singleton "HELLO")
         , fuzz (Fuzz.tuple ( Fuzz.string, Fuzz.list (Fuzz.string |> Fuzz.map (String.left 100)) )) "random insert&lookup" <|
             \( key, keys ) ->
                 List.foldl (\s -> insert s s) empty keys
-                    |> search key
+                    |> search 1000 key
                     |> Set.fromList
                     |> Expect.equalSets
                         (keys

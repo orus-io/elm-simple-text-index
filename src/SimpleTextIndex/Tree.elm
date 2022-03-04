@@ -47,8 +47,12 @@ expandPaths s =
         path =
             String.toList s
     in
-    List.range 0 (List.length path)
-        |> List.map (\i -> List.drop i path)
+    if List.length path == 0 then
+        [ path ]
+
+    else
+        List.range 0 (List.length path - 1)
+            |> List.map (\i -> List.drop i path)
 
 
 insert : String -> a -> Tree a -> Tree a
@@ -105,9 +109,24 @@ findPath path node =
         |> Tuple.second
 
 
-nodeAllItems : Node a -> List (List a)
-nodeAllItems (Node items edges) =
-    items :: (edges |> Dict.values |> List.concatMap nodeAllItems)
+nodeAllItems : Int -> Node a -> List (List a)
+nodeAllItems maxSize (Node items edges) =
+    edges
+        |> Dict.values
+        |> List.foldl
+            (\node ( result, size ) ->
+                if size < maxSize then
+                    let
+                        childItems =
+                            nodeAllItems maxSize node
+                    in
+                    ( result ++ childItems, size + List.length childItems )
+
+                else
+                    ( result, size )
+            )
+            ( [ items ], List.length items )
+        |> Tuple.first
 
 
 lookup : String -> Node a -> Maybe (Node a)
@@ -121,9 +140,9 @@ lookup text node =
             |> Maybe.andThen Tuple.second
 
 
-search : String -> Tree a -> List a
-search text =
+search : Int -> String -> Tree a -> List a
+search maxSize text =
     lookup text
-        >> Maybe.map nodeAllItems
+        >> Maybe.map (nodeAllItems maxSize)
         >> Maybe.map List.concat
         >> Maybe.withDefault []
