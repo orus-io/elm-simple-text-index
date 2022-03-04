@@ -29,6 +29,7 @@ module SimpleTextIndex exposing
 
 -}
 
+import Internal exposing (intersectionBy, tokenize)
 import List.Extra as List
 import SimpleTextIndex.Trie as Trie exposing (Trie)
 
@@ -43,7 +44,6 @@ type Config doc
         { ref : doc -> String
         , fields : List (doc -> String)
         , normalize : String -> String
-        , maxResultSize : Int
         }
 
 
@@ -63,18 +63,7 @@ config { ref, fields, normalize } =
         { ref = ref
         , fields = fields
         , normalize = normalize
-        , maxResultSize = 200
         }
-
-
-{-|
-
-    Set the max number of results when searching
-
--}
-setMaxResultSize : Int -> Config a -> Config a
-setMaxResultSize size (Config cfg) =
-    Config { cfg | maxResultSize = size }
 
 
 {-|
@@ -97,12 +86,6 @@ empty =
     Trie.empty
 
 
-substrings : String -> List String
-substrings s =
-    List.range 0 (String.length s)
-        |> List.map (\i -> String.dropLeft i s)
-
-
 {-|
 
     Add a document to an index
@@ -113,7 +96,6 @@ add (Config cfg) value index =
     List.map (\extract -> extract value)
         cfg.fields
         |> List.concatMap (cfg.normalize >> tokenize)
-        |> List.concatMap substrings
         |> List.unique
         |> List.foldl
             (\s ->
@@ -132,36 +114,8 @@ search (Config cfg) text index =
     String.split " " text
         |> List.map
             (\word ->
-                Trie.getBranch cfg.maxResultSize word index |> List.concat
+                Trie.getBranch word index |> List.concat
             )
         |> List.foldl1 (intersectionBy cfg.ref)
         |> Maybe.withDefault []
         |> List.uniqueBy cfg.ref
-
-
-tokenize : String -> List String
-tokenize value =
-    value
-        |> String.split " "
-        |> List.concatMap
-            tokenizeWord
-        |> List.unique
-
-
-tokenizeWord : String -> List String
-tokenizeWord s =
-    if s == "" then
-        []
-
-    else
-        s :: tokenizeWord (String.dropLeft 1 s)
-
-
-intersectionBy : (doc -> comparable) -> List doc -> List doc -> List doc
-intersectionBy getRef l1 l2 =
-    let
-        l2refs : List comparable
-        l2refs =
-            List.map getRef l2
-    in
-    List.filter (\doc -> List.member (getRef doc) l2refs) l1

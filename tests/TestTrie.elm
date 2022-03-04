@@ -3,7 +3,7 @@ module TestTrie exposing (suite)
 import Expect
 import Fuzz
 import Set
-import SimpleTextIndex.Trie as Trie exposing (Trie, empty, get, getBranch, insert)
+import SimpleTextIndex.Trie exposing (empty, getBranch, insert)
 import Test exposing (Test, describe, fuzz, test)
 
 
@@ -14,7 +14,7 @@ suite =
             \_ ->
                 empty
                     |> insert "hello" "HELLO"
-                    |> getBranch 10 "hel"
+                    |> getBranch "hel"
                     |> List.concat
                     |> Set.fromList
                     |> Expect.equalSets (Set.singleton "HELLO")
@@ -22,14 +22,14 @@ suite =
             \s ->
                 empty
                     |> insert s "HELLO"
-                    |> getBranch 1000 s
+                    |> getBranch s
                     |> List.concat
                     |> Set.fromList
                     |> Expect.equalSets (Set.singleton "HELLO")
-        , fuzz (Fuzz.tuple ( Fuzz.string, Fuzz.list (Fuzz.string |> Fuzz.map (String.left 100)) )) "random insert&lookup" <|
+        , fuzz (Fuzz.tuple ( Fuzz.string, Fuzz.list Fuzz.string )) "random insert&lookup" <|
             \( key, keys ) ->
                 List.foldl (\s -> insert s s) empty keys
-                    |> getBranch 1000 key
+                    |> getBranch key
                     |> List.concat
                     |> Set.fromList
                     |> Expect.equalSets

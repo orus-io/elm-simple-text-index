@@ -1,7 +1,6 @@
 module SimpleTextIndex.Trie exposing
     ( Trie
     , empty
-    , get
     , getBranch
     , insert
     )
@@ -100,38 +99,29 @@ findPath path node =
         |> Tuple.second
 
 
-get : String -> Trie a -> List a
-get text =
+getBranch : String -> Trie a -> List (List a)
+getBranch text =
     lookup text
-        >> Maybe.map nodeItems
+        >> Maybe.map nodeAllItems
         >> Maybe.withDefault []
 
 
-getBranch : Int -> String -> Trie a -> List (List a)
-getBranch maxSize text =
-    lookup text
-        >> Maybe.map (nodeAllItems maxSize)
-        >> Maybe.withDefault []
+visitHelp : List (Node a) -> List (Node a) -> List (Node a)
+visitHelp queue accumulator =
+    case queue of
+        [] ->
+            accumulator
+
+        node :: tail ->
+            case node of
+                Node _ edges ->
+                    visitHelp (Dict.values edges ++ tail) (node :: accumulator)
 
 
-nodeAllItems : Int -> Node a -> List (List a)
-nodeAllItems maxSize (Node items edges) =
-    edges
-        |> Dict.values
-        |> List.foldl
-            (\node ( result, size ) ->
-                if size < maxSize then
-                    let
-                        childItems =
-                            nodeAllItems maxSize node
-                    in
-                    ( result ++ childItems, size + List.length childItems )
-
-                else
-                    ( result, size )
-            )
-            ( [ items ], List.length items )
-        |> Tuple.first
+nodeAllItems : Node a -> List (List a)
+nodeAllItems node =
+    visitHelp [ node ] []
+        |> List.map nodeItems
 
 
 lookup : String -> Node a -> Maybe (Node a)
