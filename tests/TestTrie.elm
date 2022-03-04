@@ -14,23 +14,20 @@ suite =
             \_ ->
                 empty
                     |> insert "hello" "HELLO"
-                    |> getBranch "hel"
-                    |> List.concat
+                    |> getBranch 1000 "hel"
                     |> Set.fromList
                     |> Expect.equalSets (Set.singleton "HELLO")
         , fuzz Fuzz.string "insert&get" <|
             \s ->
                 empty
                     |> insert s "HELLO"
-                    |> getBranch s
-                    |> List.concat
+                    |> getBranch 1000 s
                     |> Set.fromList
                     |> Expect.equalSets (Set.singleton "HELLO")
         , fuzz (Fuzz.tuple ( Fuzz.string, Fuzz.list Fuzz.string )) "random insert&lookup" <|
             \( key, keys ) ->
                 List.foldl (\s -> insert s s) empty keys
-                    |> getBranch key
-                    |> List.concat
+                    |> getBranch 10000000 key
                     |> Set.fromList
                     |> Expect.equalSets
                         (keys

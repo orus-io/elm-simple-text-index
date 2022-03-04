@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Main</title>
+  <title>BenchmarkLIFO</title>
   <style>body { padding: 0; margin: 0; }</style>
 </head>
 
@@ -807,66 +807,6 @@ var _List_sortWith = F2(function(f, xs)
 
 
 
-// MATH
-
-var _Basics_add = F2(function(a, b) { return a + b; });
-var _Basics_sub = F2(function(a, b) { return a - b; });
-var _Basics_mul = F2(function(a, b) { return a * b; });
-var _Basics_fdiv = F2(function(a, b) { return a / b; });
-var _Basics_idiv = F2(function(a, b) { return (a / b) | 0; });
-var _Basics_pow = F2(Math.pow);
-
-var _Basics_remainderBy = F2(function(b, a) { return a % b; });
-
-// https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/divmodnote-letter.pdf
-var _Basics_modBy = F2(function(modulus, x)
-{
-	var answer = x % modulus;
-	return modulus === 0
-		? _Debug_crash(11)
-		:
-	((answer > 0 && modulus < 0) || (answer < 0 && modulus > 0))
-		? answer + modulus
-		: answer;
-});
-
-
-// TRIGONOMETRY
-
-var _Basics_pi = Math.PI;
-var _Basics_e = Math.E;
-var _Basics_cos = Math.cos;
-var _Basics_sin = Math.sin;
-var _Basics_tan = Math.tan;
-var _Basics_acos = Math.acos;
-var _Basics_asin = Math.asin;
-var _Basics_atan = Math.atan;
-var _Basics_atan2 = F2(Math.atan2);
-
-
-// MORE MATH
-
-function _Basics_toFloat(x) { return x; }
-function _Basics_truncate(n) { return n | 0; }
-function _Basics_isInfinite(n) { return n === Infinity || n === -Infinity; }
-
-var _Basics_ceiling = Math.ceil;
-var _Basics_floor = Math.floor;
-var _Basics_round = Math.round;
-var _Basics_sqrt = Math.sqrt;
-var _Basics_log = Math.log;
-var _Basics_isNaN = isNaN;
-
-
-// BOOLEANS
-
-function _Basics_not(bool) { return !bool; }
-var _Basics_and = F2(function(a, b) { return a && b; });
-var _Basics_or  = F2(function(a, b) { return a || b; });
-var _Basics_xor = F2(function(a, b) { return a !== b; });
-
-
-
 var _String_cons = F2(function(chr, str)
 {
 	return chr + str;
@@ -1222,6 +1162,292 @@ function _Char_toLocaleUpper(char)
 function _Char_toLocaleLower(char)
 {
 	return _Utils_chr(char.toLocaleLowerCase());
+}
+
+
+
+// MATH
+
+var _Basics_add = F2(function(a, b) { return a + b; });
+var _Basics_sub = F2(function(a, b) { return a - b; });
+var _Basics_mul = F2(function(a, b) { return a * b; });
+var _Basics_fdiv = F2(function(a, b) { return a / b; });
+var _Basics_idiv = F2(function(a, b) { return (a / b) | 0; });
+var _Basics_pow = F2(Math.pow);
+
+var _Basics_remainderBy = F2(function(b, a) { return a % b; });
+
+// https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/divmodnote-letter.pdf
+var _Basics_modBy = F2(function(modulus, x)
+{
+	var answer = x % modulus;
+	return modulus === 0
+		? _Debug_crash(11)
+		:
+	((answer > 0 && modulus < 0) || (answer < 0 && modulus > 0))
+		? answer + modulus
+		: answer;
+});
+
+
+// TRIGONOMETRY
+
+var _Basics_pi = Math.PI;
+var _Basics_e = Math.E;
+var _Basics_cos = Math.cos;
+var _Basics_sin = Math.sin;
+var _Basics_tan = Math.tan;
+var _Basics_acos = Math.acos;
+var _Basics_asin = Math.asin;
+var _Basics_atan = Math.atan;
+var _Basics_atan2 = F2(Math.atan2);
+
+
+// MORE MATH
+
+function _Basics_toFloat(x) { return x; }
+function _Basics_truncate(n) { return n | 0; }
+function _Basics_isInfinite(n) { return n === Infinity || n === -Infinity; }
+
+var _Basics_ceiling = Math.ceil;
+var _Basics_floor = Math.floor;
+var _Basics_round = Math.round;
+var _Basics_sqrt = Math.sqrt;
+var _Basics_log = Math.log;
+var _Basics_isNaN = isNaN;
+
+
+// BOOLEANS
+
+function _Basics_not(bool) { return !bool; }
+var _Basics_and = F2(function(a, b) { return a && b; });
+var _Basics_or  = F2(function(a, b) { return a || b; });
+var _Basics_xor = F2(function(a, b) { return a !== b; });
+
+
+
+// TASKS
+
+function _Scheduler_succeed(value)
+{
+	return {
+		$: 0,
+		a: value
+	};
+}
+
+function _Scheduler_fail(error)
+{
+	return {
+		$: 1,
+		a: error
+	};
+}
+
+function _Scheduler_binding(callback)
+{
+	return {
+		$: 2,
+		b: callback,
+		c: null
+	};
+}
+
+var _Scheduler_andThen = F2(function(callback, task)
+{
+	return {
+		$: 3,
+		b: callback,
+		d: task
+	};
+});
+
+var _Scheduler_onError = F2(function(callback, task)
+{
+	return {
+		$: 4,
+		b: callback,
+		d: task
+	};
+});
+
+function _Scheduler_receive(callback)
+{
+	return {
+		$: 5,
+		b: callback
+	};
+}
+
+
+// PROCESSES
+
+var _Scheduler_guid = 0;
+
+function _Scheduler_rawSpawn(task)
+{
+	var proc = {
+		$: 0,
+		e: _Scheduler_guid++,
+		f: task,
+		g: null,
+		h: []
+	};
+
+	_Scheduler_enqueue(proc);
+
+	return proc;
+}
+
+function _Scheduler_spawn(task)
+{
+	return _Scheduler_binding(function(callback) {
+		callback(_Scheduler_succeed(_Scheduler_rawSpawn(task)));
+	});
+}
+
+function _Scheduler_rawSend(proc, msg)
+{
+	proc.h.push(msg);
+	_Scheduler_enqueue(proc);
+}
+
+var _Scheduler_send = F2(function(proc, msg)
+{
+	return _Scheduler_binding(function(callback) {
+		_Scheduler_rawSend(proc, msg);
+		callback(_Scheduler_succeed(_Utils_Tuple0));
+	});
+});
+
+function _Scheduler_kill(proc)
+{
+	return _Scheduler_binding(function(callback) {
+		var task = proc.f;
+		if (task.$ === 2 && task.c)
+		{
+			task.c();
+		}
+
+		proc.f = null;
+
+		callback(_Scheduler_succeed(_Utils_Tuple0));
+	});
+}
+
+
+/* STEP PROCESSES
+
+type alias Process =
+  { $ : tag
+  , id : unique_id
+  , root : Task
+  , stack : null | { $: SUCCEED | FAIL, a: callback, b: stack }
+  , mailbox : [msg]
+  }
+
+*/
+
+
+var _Scheduler_working = false;
+var _Scheduler_queue = [];
+
+
+function _Scheduler_enqueue(proc)
+{
+	_Scheduler_queue.push(proc);
+	if (_Scheduler_working)
+	{
+		return;
+	}
+	_Scheduler_working = true;
+	while (proc = _Scheduler_queue.shift())
+	{
+		_Scheduler_step(proc);
+	}
+	_Scheduler_working = false;
+}
+
+
+function _Scheduler_step(proc)
+{
+	while (proc.f)
+	{
+		var rootTag = proc.f.$;
+		if (rootTag === 0 || rootTag === 1)
+		{
+			while (proc.g && proc.g.$ !== rootTag)
+			{
+				proc.g = proc.g.i;
+			}
+			if (!proc.g)
+			{
+				return;
+			}
+			proc.f = proc.g.b(proc.f.a);
+			proc.g = proc.g.i;
+		}
+		else if (rootTag === 2)
+		{
+			proc.f.c = proc.f.b(function(newRoot) {
+				proc.f = newRoot;
+				_Scheduler_enqueue(proc);
+			});
+			return;
+		}
+		else if (rootTag === 5)
+		{
+			if (proc.h.length === 0)
+			{
+				return;
+			}
+			proc.f = proc.f.b(proc.h.shift());
+		}
+		else // if (rootTag === 3 || rootTag === 4)
+		{
+			proc.g = {
+				$: rootTag === 3 ? 0 : 1,
+				b: proc.f.b,
+				i: proc.g
+			};
+			proc.f = proc.f.d;
+		}
+	}
+}
+
+
+var _Benchmark_getTimestamp =
+  typeof performance !== "undefined"
+    ? performance.now.bind(performance)
+    : Date.now;
+
+// sample : Int -> Operation -> Task Error Float
+var _Benchmark_sample = F2(function(n, fn) {
+  return _Scheduler_binding(function(callback) {
+    var start = _Benchmark_getTimestamp();
+
+    try {
+      for (var i = 0; i < n; i++) {
+        fn();
+      }
+    } catch (error) {
+      if (error instanceof RangeError) {
+        callback(_Scheduler_fail($elm_explorations$benchmark$Benchmark$LowLevel$StackOverflow));
+      } else {
+        callback(_Scheduler_fail($elm_explorations$benchmark$Benchmark$LowLevel$UnknownError(error.message)));
+      }
+      return;
+    }
+
+    var end = _Benchmark_getTimestamp();
+
+    callback(_Scheduler_succeed(end - start));
+  });
+});
+
+// operation : (() -> a) -> Operation
+function _Benchmark_operation(thunk) {
+  return thunk;
 }
 
 
@@ -1655,197 +1881,6 @@ function _Json_addEntry(func)
 }
 
 var _Json_encodeNull = _Json_wrap(null);
-
-
-
-// TASKS
-
-function _Scheduler_succeed(value)
-{
-	return {
-		$: 0,
-		a: value
-	};
-}
-
-function _Scheduler_fail(error)
-{
-	return {
-		$: 1,
-		a: error
-	};
-}
-
-function _Scheduler_binding(callback)
-{
-	return {
-		$: 2,
-		b: callback,
-		c: null
-	};
-}
-
-var _Scheduler_andThen = F2(function(callback, task)
-{
-	return {
-		$: 3,
-		b: callback,
-		d: task
-	};
-});
-
-var _Scheduler_onError = F2(function(callback, task)
-{
-	return {
-		$: 4,
-		b: callback,
-		d: task
-	};
-});
-
-function _Scheduler_receive(callback)
-{
-	return {
-		$: 5,
-		b: callback
-	};
-}
-
-
-// PROCESSES
-
-var _Scheduler_guid = 0;
-
-function _Scheduler_rawSpawn(task)
-{
-	var proc = {
-		$: 0,
-		e: _Scheduler_guid++,
-		f: task,
-		g: null,
-		h: []
-	};
-
-	_Scheduler_enqueue(proc);
-
-	return proc;
-}
-
-function _Scheduler_spawn(task)
-{
-	return _Scheduler_binding(function(callback) {
-		callback(_Scheduler_succeed(_Scheduler_rawSpawn(task)));
-	});
-}
-
-function _Scheduler_rawSend(proc, msg)
-{
-	proc.h.push(msg);
-	_Scheduler_enqueue(proc);
-}
-
-var _Scheduler_send = F2(function(proc, msg)
-{
-	return _Scheduler_binding(function(callback) {
-		_Scheduler_rawSend(proc, msg);
-		callback(_Scheduler_succeed(_Utils_Tuple0));
-	});
-});
-
-function _Scheduler_kill(proc)
-{
-	return _Scheduler_binding(function(callback) {
-		var task = proc.f;
-		if (task.$ === 2 && task.c)
-		{
-			task.c();
-		}
-
-		proc.f = null;
-
-		callback(_Scheduler_succeed(_Utils_Tuple0));
-	});
-}
-
-
-/* STEP PROCESSES
-
-type alias Process =
-  { $ : tag
-  , id : unique_id
-  , root : Task
-  , stack : null | { $: SUCCEED | FAIL, a: callback, b: stack }
-  , mailbox : [msg]
-  }
-
-*/
-
-
-var _Scheduler_working = false;
-var _Scheduler_queue = [];
-
-
-function _Scheduler_enqueue(proc)
-{
-	_Scheduler_queue.push(proc);
-	if (_Scheduler_working)
-	{
-		return;
-	}
-	_Scheduler_working = true;
-	while (proc = _Scheduler_queue.shift())
-	{
-		_Scheduler_step(proc);
-	}
-	_Scheduler_working = false;
-}
-
-
-function _Scheduler_step(proc)
-{
-	while (proc.f)
-	{
-		var rootTag = proc.f.$;
-		if (rootTag === 0 || rootTag === 1)
-		{
-			while (proc.g && proc.g.$ !== rootTag)
-			{
-				proc.g = proc.g.i;
-			}
-			if (!proc.g)
-			{
-				return;
-			}
-			proc.f = proc.g.b(proc.f.a);
-			proc.g = proc.g.i;
-		}
-		else if (rootTag === 2)
-		{
-			proc.f.c = proc.f.b(function(newRoot) {
-				proc.f = newRoot;
-				_Scheduler_enqueue(proc);
-			});
-			return;
-		}
-		else if (rootTag === 5)
-		{
-			if (proc.h.length === 0)
-			{
-				return;
-			}
-			proc.f = proc.f.b(proc.h.shift());
-		}
-		else // if (rootTag === 3 || rootTag === 4)
-		{
-			proc.g = {
-				$: rootTag === 3 ? 0 : 1,
-				b: proc.f.b,
-				i: proc.g
-			};
-			proc.f = proc.f.d;
-		}
-	}
-}
 
 
 
@@ -4371,41 +4406,6 @@ function _Browser_load(url)
 }
 
 
-var _Benchmark_getTimestamp =
-  typeof performance !== "undefined"
-    ? performance.now.bind(performance)
-    : Date.now;
-
-// sample : Int -> Operation -> Task Error Float
-var _Benchmark_sample = F2(function(n, fn) {
-  return _Scheduler_binding(function(callback) {
-    var start = _Benchmark_getTimestamp();
-
-    try {
-      for (var i = 0; i < n; i++) {
-        fn();
-      }
-    } catch (error) {
-      if (error instanceof RangeError) {
-        callback(_Scheduler_fail($elm_explorations$benchmark$Benchmark$LowLevel$StackOverflow));
-      } else {
-        callback(_Scheduler_fail($elm_explorations$benchmark$Benchmark$LowLevel$UnknownError(error.message)));
-      }
-      return;
-    }
-
-    var end = _Benchmark_getTimestamp();
-
-    callback(_Scheduler_succeed(end - start));
-  });
-});
-
-// operation : (() -> a) -> Operation
-function _Benchmark_operation(thunk) {
-  return thunk;
-}
-
-
 
 var _Bitwise_and = F2(function(a, b)
 {
@@ -4622,15 +4622,213 @@ var $elm$core$Set$toList = function (_v0) {
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
+var $elm$core$Maybe$Just = function (a) {
+	return {$: 'Just', a: a};
+};
+var $elm$core$Maybe$Nothing = {$: 'Nothing'};
+var $elm$core$Basics$apR = F2(
+	function (x, f) {
+		return f(x);
+	});
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$String$cons = _String_cons;
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
+};
+var $elm$core$Char$fromCode = _Char_fromCode;
+var $elm$core$Basics$add = _Basics_add;
+var $elm$core$List$foldl = F3(
+	function (func, acc, list) {
+		foldl:
+		while (true) {
+			if (!list.b) {
+				return acc;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				var $temp$func = func,
+					$temp$acc = A2(func, x, acc),
+					$temp$list = xs;
+				func = $temp$func;
+				acc = $temp$acc;
+				list = $temp$list;
+				continue foldl;
+			}
+		}
+	});
+var $elm$core$Basics$gt = _Utils_gt;
+var $elm$core$List$reverse = function (list) {
+	return A3($elm$core$List$foldl, $elm$core$List$cons, _List_Nil, list);
+};
+var $elm$core$List$foldrHelper = F4(
+	function (fn, acc, ctr, ls) {
+		if (!ls.b) {
+			return acc;
+		} else {
+			var a = ls.a;
+			var r1 = ls.b;
+			if (!r1.b) {
+				return A2(fn, a, acc);
+			} else {
+				var b = r1.a;
+				var r2 = r1.b;
+				if (!r2.b) {
+					return A2(
+						fn,
+						a,
+						A2(fn, b, acc));
+				} else {
+					var c = r2.a;
+					var r3 = r2.b;
+					if (!r3.b) {
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(fn, c, acc)));
+					} else {
+						var d = r3.a;
+						var r4 = r3.b;
+						var res = (ctr > 500) ? A3(
+							$elm$core$List$foldl,
+							fn,
+							acc,
+							$elm$core$List$reverse(r4)) : A4($elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(
+									fn,
+									c,
+									A2(fn, d, res))));
+					}
+				}
+			}
+		}
+	});
+var $elm$core$List$foldr = F3(
+	function (fn, acc, ls) {
+		return A4($elm$core$List$foldrHelper, fn, acc, 0, ls);
+	});
+var $elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						$elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
+var $elm$core$Basics$le = _Utils_le;
+var $elm$core$Basics$sub = _Basics_sub;
+var $elm$core$List$rangeHelp = F3(
+	function (lo, hi, list) {
+		rangeHelp:
+		while (true) {
+			if (_Utils_cmp(lo, hi) < 1) {
+				var $temp$lo = lo,
+					$temp$hi = hi - 1,
+					$temp$list = A2($elm$core$List$cons, hi, list);
+				lo = $temp$lo;
+				hi = $temp$hi;
+				list = $temp$list;
+				continue rangeHelp;
+			} else {
+				return list;
+			}
+		}
+	});
+var $elm$core$List$range = F2(
+	function (lo, hi) {
+		return A3($elm$core$List$rangeHelp, lo, hi, _List_Nil);
+	});
+var $author$project$BenchmarkLIFO$alphabet = A2(
+	$elm$core$List$map,
+	A2($elm$core$Basics$composeR, $elm$core$Char$fromCode, $elm$core$String$fromChar),
+	A2($elm$core$List$range, 97, 122));
 var $elm$core$Basics$apL = F2(
 	function (f, x) {
 		return f(x);
+	});
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm_explorations$benchmark$Benchmark$Status$Cold = {$: 'Cold'};
+var $elm_explorations$benchmark$Benchmark$Benchmark$Single = F3(
+	function (a, b, c) {
+		return {$: 'Single', a: a, b: b, c: c};
+	});
+var $elm_explorations$benchmark$Benchmark$LowLevel$StackOverflow = {$: 'StackOverflow'};
+var $elm_explorations$benchmark$Benchmark$LowLevel$UnknownError = function (a) {
+	return {$: 'UnknownError', a: a};
+};
+var $elm_explorations$benchmark$Benchmark$LowLevel$operation = function (fn) {
+	return _Benchmark_operation(fn);
+};
+var $elm_explorations$benchmark$Benchmark$benchmark = F2(
+	function (name, fn) {
+		return A3(
+			$elm_explorations$benchmark$Benchmark$Benchmark$Single,
+			name,
+			$elm_explorations$benchmark$Benchmark$LowLevel$operation(fn),
+			$elm_explorations$benchmark$Benchmark$Status$Cold);
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
 	});
 var $elm_explorations$benchmark$Benchmark$Benchmark$Group = F2(
 	function (a, b) {
 		return {$: 'Group', a: a, b: b};
 	});
 var $elm_explorations$benchmark$Benchmark$describe = $elm_explorations$benchmark$Benchmark$Benchmark$Group;
+var $author$project$BenchmarkLIFO$lifoPop = function (lifo) {
+	lifoPop:
+	while (true) {
+		if (!lifo.b) {
+			return _Utils_Tuple2($elm$core$Maybe$Nothing, lifo);
+		} else {
+			if (!lifo.a.b) {
+				var tail = lifo.b;
+				var $temp$lifo = tail;
+				lifo = $temp$lifo;
+				continue lifoPop;
+			} else {
+				var _v1 = lifo.a;
+				var hHead = _v1.a;
+				var hTail = _v1.b;
+				var tail = lifo.b;
+				return _Utils_Tuple2(
+					$elm$core$Maybe$Just(hHead),
+					A2($elm$core$List$cons, hTail, tail));
+			}
+		}
+	}
+};
+var $author$project$BenchmarkLIFO$lifoPush = $elm$core$List$cons;
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
 		return a;
@@ -4657,11 +4855,6 @@ var $elm$json$Json$Decode$OneOf = function (a) {
 	return {$: 'OneOf', a: a};
 };
 var $elm$core$Basics$False = {$: 'False'};
-var $elm$core$Basics$add = _Basics_add;
-var $elm$core$Maybe$Just = function (a) {
-	return {$: 'Just', a: a};
-};
-var $elm$core$Maybe$Nothing = {$: 'Nothing'};
 var $elm$core$String$all = _String_all;
 var $elm$core$Basics$and = _Basics_and;
 var $elm$core$Basics$append = _Utils_append;
@@ -4685,25 +4878,6 @@ var $elm$json$Json$Decode$indent = function (str) {
 		'\n    ',
 		A2($elm$core$String$split, '\n', str));
 };
-var $elm$core$List$foldl = F3(
-	function (func, acc, list) {
-		foldl:
-		while (true) {
-			if (!list.b) {
-				return acc;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				var $temp$func = func,
-					$temp$acc = A2(func, x, acc),
-					$temp$list = xs;
-				func = $temp$func;
-				acc = $temp$acc;
-				list = $temp$list;
-				continue foldl;
-			}
-		}
-	});
 var $elm$core$List$length = function (xs) {
 	return A3(
 		$elm$core$List$foldl,
@@ -4715,29 +4889,6 @@ var $elm$core$List$length = function (xs) {
 		xs);
 };
 var $elm$core$List$map2 = _List_map2;
-var $elm$core$Basics$le = _Utils_le;
-var $elm$core$Basics$sub = _Basics_sub;
-var $elm$core$List$rangeHelp = F3(
-	function (lo, hi, list) {
-		rangeHelp:
-		while (true) {
-			if (_Utils_cmp(lo, hi) < 1) {
-				var $temp$lo = lo,
-					$temp$hi = hi - 1,
-					$temp$list = A2($elm$core$List$cons, hi, list);
-				lo = $temp$lo;
-				hi = $temp$hi;
-				list = $temp$list;
-				continue rangeHelp;
-			} else {
-				return list;
-			}
-		}
-	});
-var $elm$core$List$range = F2(
-	function (lo, hi) {
-		return A3($elm$core$List$rangeHelp, lo, hi, _List_Nil);
-	});
 var $elm$core$List$indexedMap = F2(
 	function (f, xs) {
 		return A3(
@@ -4768,9 +4919,6 @@ var $elm$core$Char$isDigit = function (_char) {
 };
 var $elm$core$Char$isAlphaNum = function (_char) {
 	return $elm$core$Char$isLower(_char) || ($elm$core$Char$isUpper(_char) || $elm$core$Char$isDigit(_char));
-};
-var $elm$core$List$reverse = function (list) {
-	return A3($elm$core$List$foldl, $elm$core$List$cons, _List_Nil, list);
 };
 var $elm$core$String$uncons = _String_uncons;
 var $elm$json$Json$Decode$errorOneOf = F2(
@@ -4896,14 +5044,9 @@ var $elm$core$Elm$JsArray$initialize = _JsArray_initialize;
 var $elm$core$Array$Leaf = function (a) {
 	return {$: 'Leaf', a: a};
 };
-var $elm$core$Basics$apR = F2(
-	function (x, f) {
-		return f(x);
-	});
 var $elm$core$Basics$eq = _Utils_equal;
 var $elm$core$Basics$floor = _Basics_floor;
 var $elm$core$Elm$JsArray$length = _JsArray_length;
-var $elm$core$Basics$gt = _Utils_gt;
 var $elm$core$Basics$max = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) > 0) ? x : y;
@@ -5196,75 +5339,6 @@ var $elm$core$Task$Perform = function (a) {
 };
 var $elm$core$Task$succeed = _Scheduler_succeed;
 var $elm$core$Task$init = $elm$core$Task$succeed(_Utils_Tuple0);
-var $elm$core$List$foldrHelper = F4(
-	function (fn, acc, ctr, ls) {
-		if (!ls.b) {
-			return acc;
-		} else {
-			var a = ls.a;
-			var r1 = ls.b;
-			if (!r1.b) {
-				return A2(fn, a, acc);
-			} else {
-				var b = r1.a;
-				var r2 = r1.b;
-				if (!r2.b) {
-					return A2(
-						fn,
-						a,
-						A2(fn, b, acc));
-				} else {
-					var c = r2.a;
-					var r3 = r2.b;
-					if (!r3.b) {
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(fn, c, acc)));
-					} else {
-						var d = r3.a;
-						var r4 = r3.b;
-						var res = (ctr > 500) ? A3(
-							$elm$core$List$foldl,
-							fn,
-							acc,
-							$elm$core$List$reverse(r4)) : A4($elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(
-									fn,
-									c,
-									A2(fn, d, res))));
-					}
-				}
-			}
-		}
-	});
-var $elm$core$List$foldr = F3(
-	function (fn, acc, ls) {
-		return A4($elm$core$List$foldrHelper, fn, acc, 0, ls);
-	});
-var $elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						$elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
 var $elm$core$Task$andThen = _Scheduler_andThen;
 var $elm$core$Task$map = F2(
 	function (func, taskA) {
@@ -5477,10 +5551,6 @@ var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm_explorations$benchmark$Benchmark$Benchmark$Series = F2(
 	function (a, b) {
 		return {$: 'Series', a: a, b: b};
-	});
-var $elm_explorations$benchmark$Benchmark$Benchmark$Single = F3(
-	function (a, b, c) {
-		return {$: 'Single', a: a, b: b, c: c};
 	});
 var $elm_explorations$benchmark$Benchmark$Status$Failure = function (a) {
 	return {$: 'Failure', a: a};
@@ -6344,11 +6414,6 @@ var $elm_explorations$benchmark$Benchmark$finalize = function (samples) {
 	}
 };
 var $elm_explorations$benchmark$Benchmark$LowLevel$defaultMinimum = 1;
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
 var $elm$core$Basics$min = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) < 0) ? x : y;
@@ -6384,10 +6449,6 @@ var $elm$core$List$repeat = F2(
 	function (n, value) {
 		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
 	});
-var $elm_explorations$benchmark$Benchmark$LowLevel$StackOverflow = {$: 'StackOverflow'};
-var $elm_explorations$benchmark$Benchmark$LowLevel$UnknownError = function (a) {
-	return {$: 'UnknownError', a: a};
-};
 var $elm_explorations$benchmark$Benchmark$LowLevel$sample = F2(
 	function (n, operation_) {
 		return A2(_Benchmark_sample, n, operation_);
@@ -7520,22 +7581,6 @@ var $mdgriffith$style_elements$Style$prepareSheet = function (_v0) {
 var $mdgriffith$style_elements$Style$Internal$Intermediate$Rendered = function (a) {
 	return {$: 'Rendered', a: a};
 };
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
-var $elm$core$List$concatMap = F2(
-	function (f, list) {
-		return $elm$core$List$concat(
-			A2($elm$core$List$map, f, list));
-	});
 var $mdgriffith$style_elements$Style$Internal$Selector$getFindable = function (find) {
 	getFindable:
 	while (true) {
@@ -14786,671 +14831,132 @@ var $elm_explorations$benchmark$Benchmark$Runner$program = function (benchmark) 
 			view: $elm_explorations$benchmark$Benchmark$Runner$App$view
 		});
 };
-var $author$project$SimpleTextIndex$Trie$Node = F2(
-	function (a, b) {
-		return {$: 'Node', a: a, b: b};
-	});
-var $author$project$SimpleTextIndex$Trie$emptyNode = A2($author$project$SimpleTextIndex$Trie$Node, _List_Nil, $elm$core$Dict$empty);
-var $author$project$SimpleTextIndex$Trie$findPath = F2(
-	function (path, node) {
-		return A3(
-			$elm$core$List$foldl,
-			F2(
-				function (c, _v0) {
-					var parent = _v0.a;
-					var result = _v0.b;
-					if (parent.$ === 'Nothing') {
-						return _Utils_Tuple2(
-							$elm$core$Maybe$Nothing,
-							A2(
-								$elm$core$List$cons,
-								_Utils_Tuple2(c, $elm$core$Maybe$Nothing),
-								result));
-					} else {
-						var _v2 = parent.a;
-						var edges = _v2.b;
-						var nextNode = A2($elm$core$Dict$get, c, edges);
-						return _Utils_Tuple2(
-							nextNode,
-							A2(
-								$elm$core$List$cons,
-								_Utils_Tuple2(c, nextNode),
-								result));
-					}
-				}),
-			_Utils_Tuple2(
-				$elm$core$Maybe$Just(node),
-				_List_Nil),
-			path).b;
-	});
-var $author$project$SimpleTextIndex$Trie$nodeAddItem = F2(
-	function (a, _v0) {
-		var items = _v0.a;
-		var targets = _v0.b;
-		return A2(
-			$author$project$SimpleTextIndex$Trie$Node,
-			A2($elm$core$List$cons, a, items),
-			targets);
-	});
-var $author$project$SimpleTextIndex$Trie$nodeSetEdge = F3(
-	function (c, target, _v0) {
-		var items = _v0.a;
-		var targets = _v0.b;
-		return A2(
-			$author$project$SimpleTextIndex$Trie$Node,
-			items,
-			A3($elm$core$Dict$insert, c, target, targets));
-	});
-var $author$project$SimpleTextIndex$Trie$insertPath = F3(
-	function (path, value, tree) {
-		var _v0 = A3(
-			$elm$core$List$foldl,
-			F2(
-				function (_v1, child) {
-					var c = _v1.a;
-					var current = _v1.b;
-					var node = A2($elm$core$Maybe$withDefault, $author$project$SimpleTextIndex$Trie$emptyNode, current);
-					if (child.$ === 'Just') {
-						var _v3 = child.a;
-						var childC = _v3.a;
-						var childNode = _v3.b;
-						return $elm$core$Maybe$Just(
-							_Utils_Tuple2(
-								c,
-								A3($author$project$SimpleTextIndex$Trie$nodeSetEdge, childC, childNode, node)));
-					} else {
-						return $elm$core$Maybe$Just(
-							_Utils_Tuple2(
-								c,
-								A2($author$project$SimpleTextIndex$Trie$nodeAddItem, value, node)));
-					}
-				}),
-			$elm$core$Maybe$Nothing,
-			A2($author$project$SimpleTextIndex$Trie$findPath, path, tree));
-		if (_v0.$ === 'Just') {
-			var _v4 = _v0.a;
-			var c = _v4.a;
-			var node = _v4.b;
-			return A3($author$project$SimpleTextIndex$Trie$nodeSetEdge, c, node, tree);
-		} else {
-			return A2($author$project$SimpleTextIndex$Trie$nodeAddItem, value, tree);
-		}
-	});
-var $author$project$SimpleTextIndex$Trie$insert = A2($elm$core$Basics$composeR, $elm$core$String$toList, $author$project$SimpleTextIndex$Trie$insertPath);
-var $author$project$SimpleTextIndex$substrings = function (s) {
-	return A2(
-		$elm$core$List$map,
-		function (i) {
-			return A2($elm$core$String$dropLeft, i, s);
+var $author$project$BenchmarkLIFO$main = function () {
+	var prefilledList = A2(
+		$elm$core$List$concatMap,
+		function (_v15) {
+			return $author$project$BenchmarkLIFO$alphabet;
 		},
+		A2($elm$core$List$range, 1, 26));
+	var prefilledLIFO = A2(
+		$elm$core$List$map,
+		function (_v14) {
+			return $author$project$BenchmarkLIFO$alphabet;
+		},
+		A2($elm$core$List$range, 1, 26));
+	return $elm_explorations$benchmark$Benchmark$Runner$program(
 		A2(
-			$elm$core$List$range,
-			0,
-			$elm$core$String$length(s)));
-};
-var $author$project$SimpleTextIndex$tokenizeWord = function (s) {
-	return (s === '') ? _List_Nil : A2(
-		$elm$core$List$cons,
-		s,
-		$author$project$SimpleTextIndex$tokenizeWord(
-			A2($elm$core$String$dropLeft, 1, s)));
-};
-var $elm$core$List$member = F2(
-	function (x, xs) {
-		return A2(
-			$elm$core$List$any,
-			function (a) {
-				return _Utils_eq(a, x);
-			},
-			xs);
-	});
-var $elm_community$list_extra$List$Extra$uniqueHelp = F4(
-	function (f, existing, remaining, accumulator) {
-		uniqueHelp:
-		while (true) {
-			if (!remaining.b) {
-				return $elm$core$List$reverse(accumulator);
-			} else {
-				var first = remaining.a;
-				var rest = remaining.b;
-				var computedFirst = f(first);
-				if (A2($elm$core$List$member, computedFirst, existing)) {
-					var $temp$f = f,
-						$temp$existing = existing,
-						$temp$remaining = rest,
-						$temp$accumulator = accumulator;
-					f = $temp$f;
-					existing = $temp$existing;
-					remaining = $temp$remaining;
-					accumulator = $temp$accumulator;
-					continue uniqueHelp;
-				} else {
-					var $temp$f = f,
-						$temp$existing = A2($elm$core$List$cons, computedFirst, existing),
-						$temp$remaining = rest,
-						$temp$accumulator = A2($elm$core$List$cons, first, accumulator);
-					f = $temp$f;
-					existing = $temp$existing;
-					remaining = $temp$remaining;
-					accumulator = $temp$accumulator;
-					continue uniqueHelp;
-				}
-			}
-		}
-	});
-var $elm_community$list_extra$List$Extra$unique = function (list) {
-	return A4($elm_community$list_extra$List$Extra$uniqueHelp, $elm$core$Basics$identity, _List_Nil, list, _List_Nil);
-};
-var $author$project$SimpleTextIndex$tokenize = function (value) {
-	return $elm_community$list_extra$List$Extra$unique(
-		A2(
-			$elm$core$List$concatMap,
-			$author$project$SimpleTextIndex$tokenizeWord,
-			A2($elm$core$String$split, ' ', value)));
-};
-var $author$project$SimpleTextIndex$add = F3(
-	function (_v0, value, index) {
-		var cfg = _v0.a;
-		return A3(
-			$elm$core$List$foldl,
-			function (s) {
-				return A2($author$project$SimpleTextIndex$Trie$insert, s, value);
-			},
-			index,
-			$elm_community$list_extra$List$Extra$unique(
-				A2(
-					$elm$core$List$concatMap,
-					$author$project$SimpleTextIndex$substrings,
+			$elm_explorations$benchmark$Benchmark$describe,
+			'LIFO',
+			_List_fromArray(
+				[
 					A2(
-						$elm$core$List$concatMap,
-						A2($elm$core$Basics$composeR, cfg.normalize, $author$project$SimpleTextIndex$tokenize),
-						A2(
-							$elm$core$List$map,
-							function (extract) {
-								return extract(value);
-							},
-							cfg.fields)))));
-	});
-var $elm_explorations$benchmark$Benchmark$Status$Cold = {$: 'Cold'};
-var $elm_explorations$benchmark$Benchmark$LowLevel$operation = function (fn) {
-	return _Benchmark_operation(fn);
-};
-var $elm_explorations$benchmark$Benchmark$benchmark = F2(
-	function (name, fn) {
-		return A3(
-			$elm_explorations$benchmark$Benchmark$Benchmark$Single,
-			name,
-			$elm_explorations$benchmark$Benchmark$LowLevel$operation(fn),
-			$elm_explorations$benchmark$Benchmark$Status$Cold);
-	});
-var $author$project$SimpleTextIndex$Trie$empty = $author$project$SimpleTextIndex$Trie$emptyNode;
-var $author$project$SimpleTextIndex$empty = $author$project$SimpleTextIndex$Trie$empty;
-var $author$project$BenchmarkTextIndex$sampleData0 = {description: 'It\'s one of a kind !', id: 'id0', name: 'sample 0'};
-var $author$project$SimpleTextIndex$Config = function (a) {
-	return {$: 'Config', a: a};
-};
-var $author$project$SimpleTextIndex$config = function (_v0) {
-	var ref = _v0.ref;
-	var fields = _v0.fields;
-	var normalize = _v0.normalize;
-	return $author$project$SimpleTextIndex$Config(
-		{fields: fields, maxResultSize: 200, normalize: normalize, ref: ref});
-};
-var $author$project$BenchmarkTextIndex$sampleDataIndexConfig = $author$project$SimpleTextIndex$config(
-	{
-		fields: _List_fromArray(
-			[
-				function ($) {
-				return $.name;
-			},
-				function ($) {
-				return $.description;
-			}
-			]),
-		normalize: $elm$core$String$toLower,
-		ref: function ($) {
-			return $.id;
-		}
-	});
-var $elm$random$Random$Generator = function (a) {
-	return {$: 'Generator', a: a};
-};
-var $elm$random$Random$andThen = F2(
-	function (callback, _v0) {
-		var genA = _v0.a;
-		return $elm$random$Random$Generator(
-			function (seed) {
-				var _v1 = genA(seed);
-				var result = _v1.a;
-				var newSeed = _v1.b;
-				var _v2 = callback(result);
-				var genB = _v2.a;
-				return genB(newSeed);
-			});
-	});
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
-var $elm$random$Random$Seed = F2(
-	function (a, b) {
-		return {$: 'Seed', a: a, b: b};
-	});
-var $elm$random$Random$next = function (_v0) {
-	var state0 = _v0.a;
-	var incr = _v0.b;
-	return A2($elm$random$Random$Seed, ((state0 * 1664525) + incr) >>> 0, incr);
-};
-var $elm$random$Random$peel = function (_v0) {
-	var state = _v0.a;
-	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
-	return ((word >>> 22) ^ word) >>> 0;
-};
-var $elm$random$Random$float = F2(
-	function (a, b) {
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var seed1 = $elm$random$Random$next(seed0);
-				var range = $elm$core$Basics$abs(b - a);
-				var n1 = $elm$random$Random$peel(seed1);
-				var n0 = $elm$random$Random$peel(seed0);
-				var lo = (134217727 & n1) * 1.0;
-				var hi = (67108863 & n0) * 1.0;
-				var val = ((hi * 134217728.0) + lo) / 9007199254740992.0;
-				var scaled = (val * range) + a;
-				return _Utils_Tuple2(
-					scaled,
-					$elm$random$Random$next(seed1));
-			});
-	});
-var $elm_community$random_extra$Random$Extra$frequency = F2(
-	function (head, pairs) {
-		var total = $elm$core$List$sum(
-			A2(
-				$elm$core$List$map,
-				A2($elm$core$Basics$composeL, $elm$core$Basics$abs, $elm$core$Tuple$first),
-				A2($elm$core$List$cons, head, pairs)));
-		var pick = F2(
-			function (someChoices, n) {
-				pick:
-				while (true) {
-					if (someChoices.b) {
-						var _v1 = someChoices.a;
-						var k = _v1.a;
-						var g = _v1.b;
-						var rest = someChoices.b;
-						if (_Utils_cmp(n, k) < 1) {
-							return g;
-						} else {
-							var $temp$someChoices = rest,
-								$temp$n = n - k;
-							someChoices = $temp$someChoices;
-							n = $temp$n;
-							continue pick;
-						}
-					} else {
-						return head.b;
-					}
-				}
-			});
-		return A2(
-			$elm$random$Random$andThen,
-			pick(
-				A2($elm$core$List$cons, head, pairs)),
-			A2($elm$random$Random$float, 0, total));
-	});
-var $elm_community$random_extra$Random$Extra$choices = F2(
-	function (hd, gens) {
-		return A2(
-			$elm_community$random_extra$Random$Extra$frequency,
-			_Utils_Tuple2(1, hd),
-			A2(
-				$elm$core$List$map,
-				function (g) {
-					return _Utils_Tuple2(1, g);
-				},
-				gens));
-	});
-var $elm$core$Char$fromCode = _Char_fromCode;
-var $elm$random$Random$int = F2(
-	function (a, b) {
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var _v0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
-				var lo = _v0.a;
-				var hi = _v0.b;
-				var range = (hi - lo) + 1;
-				if (!((range - 1) & range)) {
-					return _Utils_Tuple2(
-						(((range - 1) & $elm$random$Random$peel(seed0)) >>> 0) + lo,
-						$elm$random$Random$next(seed0));
-				} else {
-					var threshhold = (((-range) >>> 0) % range) >>> 0;
-					var accountForBias = function (seed) {
-						accountForBias:
-						while (true) {
-							var x = $elm$random$Random$peel(seed);
-							var seedN = $elm$random$Random$next(seed);
-							if (_Utils_cmp(x, threshhold) < 0) {
-								var $temp$seed = seedN;
-								seed = $temp$seed;
-								continue accountForBias;
-							} else {
-								return _Utils_Tuple2((x % range) + lo, seedN);
-							}
-						}
-					};
-					return accountForBias(seed0);
-				}
-			});
-	});
-var $elm$random$Random$map = F2(
-	function (func, _v0) {
-		var genA = _v0.a;
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var _v1 = genA(seed0);
-				var a = _v1.a;
-				var seed1 = _v1.b;
-				return _Utils_Tuple2(
-					func(a),
-					seed1);
-			});
-	});
-var $elm_community$random_extra$Random$Char$char = F2(
-	function (start, end) {
-		return A2(
-			$elm$random$Random$map,
-			$elm$core$Char$fromCode,
-			A2($elm$random$Random$int, start, end));
-	});
-var $elm_community$random_extra$Random$Char$lowerCaseLatin = A2($elm_community$random_extra$Random$Char$char, 97, 122);
-var $elm_community$random_extra$Random$Char$upperCaseLatin = A2($elm_community$random_extra$Random$Char$char, 65, 90);
-var $elm_community$random_extra$Random$Char$latin = A2(
-	$elm_community$random_extra$Random$Extra$choices,
-	$elm_community$random_extra$Random$Char$lowerCaseLatin,
-	_List_fromArray(
-		[$elm_community$random_extra$Random$Char$upperCaseLatin]));
-var $elm_community$random_extra$Random$Char$english = $elm_community$random_extra$Random$Char$latin;
-var $elm$random$Random$initialSeed = function (x) {
-	var _v0 = $elm$random$Random$next(
-		A2($elm$random$Random$Seed, 0, 1013904223));
-	var state1 = _v0.a;
-	var incr = _v0.b;
-	var state2 = (state1 + x) >>> 0;
-	return $elm$random$Random$next(
-		A2($elm$random$Random$Seed, state2, incr));
-};
-var $elm$random$Random$listHelp = F4(
-	function (revList, n, gen, seed) {
-		listHelp:
-		while (true) {
-			if (n < 1) {
-				return _Utils_Tuple2(revList, seed);
-			} else {
-				var _v0 = gen(seed);
-				var value = _v0.a;
-				var newSeed = _v0.b;
-				var $temp$revList = A2($elm$core$List$cons, value, revList),
-					$temp$n = n - 1,
-					$temp$gen = gen,
-					$temp$seed = newSeed;
-				revList = $temp$revList;
-				n = $temp$n;
-				gen = $temp$gen;
-				seed = $temp$seed;
-				continue listHelp;
-			}
-		}
-	});
-var $elm$random$Random$list = F2(
-	function (n, _v0) {
-		var gen = _v0.a;
-		return $elm$random$Random$Generator(
-			function (seed) {
-				return A4($elm$random$Random$listHelp, _List_Nil, n, gen, seed);
-			});
-	});
-var $elm_community$random_extra$Random$String$string = F2(
-	function (stringLength, charGenerator) {
-		return A2(
-			$elm$random$Random$map,
-			$elm$core$String$fromList,
-			A2($elm$random$Random$list, stringLength, charGenerator));
-	});
-var $elm_community$random_extra$Random$String$rangeLengthString = F3(
-	function (minLength, maxLength, charGenerator) {
-		return A2(
-			$elm$random$Random$andThen,
-			function (len) {
-				return A2($elm_community$random_extra$Random$String$string, len, charGenerator);
-			},
-			A2($elm$random$Random$int, minLength, maxLength));
-	});
-var $elm$random$Random$step = F2(
-	function (_v0, seed) {
-		var generator = _v0.a;
-		return generator(seed);
-	});
-var $author$project$BenchmarkTextIndex$sampleDataList = function (qty) {
-	var textLenGenerator = A2($elm$random$Random$int, 1, 30);
-	var nameGenerator = A3($elm_community$random_extra$Random$String$rangeLengthString, 4, 30, $elm_community$random_extra$Random$Char$english);
-	var descriptionGenerator = A2(
-		$elm$random$Random$map,
-		$elm$core$String$join(' '),
-		A2(
-			$elm$random$Random$andThen,
-			function (len) {
-				return A2($elm$random$Random$list, len, nameGenerator);
-			},
-			textLenGenerator));
-	return A3(
-		$elm$core$List$foldl,
-		F2(
-			function (id, _v0) {
-				var res = _v0.a;
-				var seed = _v0.b;
-				var _v1 = A2($elm$random$Random$step, nameGenerator, seed);
-				var name = _v1.a;
-				var seed1 = _v1.b;
-				var _v2 = A2($elm$random$Random$step, descriptionGenerator, seed1);
-				var description = _v2.a;
-				var seed2 = _v2.b;
-				return _Utils_Tuple2(
+					$elm_explorations$benchmark$Benchmark$describe,
+					'List',
+					_List_fromArray(
+						[
+							A2(
+							$elm_explorations$benchmark$Benchmark$benchmark,
+							'first push',
+							function (_v0) {
+								return A2($elm$core$List$append, $author$project$BenchmarkLIFO$alphabet, _List_Nil);
+							}),
+							A2(
+							$elm_explorations$benchmark$Benchmark$benchmark,
+							'push',
+							function (_v1) {
+								return A2($elm$core$List$append, $author$project$BenchmarkLIFO$alphabet, prefilledList);
+							}),
+							A2(
+							$elm_explorations$benchmark$Benchmark$benchmark,
+							'pop',
+							function (_v2) {
+								if (!prefilledList.b) {
+									return _Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil);
+								} else {
+									var head = prefilledList.a;
+									var tail = prefilledList.b;
+									return _Utils_Tuple2(
+										$elm$core$Maybe$Just(head),
+										tail);
+								}
+							}),
+							A2(
+							$elm_explorations$benchmark$Benchmark$benchmark,
+							'fill&empty',
+							function (_v4) {
+								var l = A3(
+									$elm$core$List$foldl,
+									function (_v7) {
+										return $elm$core$List$cons($author$project$BenchmarkLIFO$alphabet);
+									},
+									_List_Nil,
+									A2($elm$core$List$range, 1, 26));
+								return A3(
+									$elm$core$List$foldl,
+									F2(
+										function (_v5, lifo) {
+											if (!lifo.b) {
+												return _List_Nil;
+											} else {
+												var tail = lifo.b;
+												return tail;
+											}
+										}),
+									l,
+									A2($elm$core$List$range, 1, 676));
+							})
+						])),
 					A2(
-						$elm$core$List$cons,
-						{
-							description: description,
-							id: 'id' + $elm$core$String$fromInt(id),
-							name: name
-						},
-						res),
-					seed2);
-			}),
-		_Utils_Tuple2(
-			_List_Nil,
-			$elm$random$Random$initialSeed(42)),
-		A2($elm$core$List$range, 1, qty)).a;
-};
-var $elm_community$list_extra$List$Extra$foldl1 = F2(
-	function (func, list) {
-		if (!list.b) {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var x = list.a;
-			var xs = list.b;
-			return $elm$core$Maybe$Just(
-				A3($elm$core$List$foldl, func, x, xs));
-		}
-	});
-var $author$project$SimpleTextIndex$Trie$lookup = F2(
-	function (text, node) {
-		return (text === '') ? $elm$core$Maybe$Just(node) : A2(
-			$elm$core$Maybe$andThen,
-			$elm$core$Tuple$second,
-			$elm$core$List$head(
-				A2(
-					$author$project$SimpleTextIndex$Trie$findPath,
-					$elm$core$String$toList(text),
-					node)));
-	});
-var $elm$core$Dict$values = function (dict) {
-	return A3(
-		$elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2($elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
-};
-var $author$project$SimpleTextIndex$Trie$nodeAllItems = F2(
-	function (maxSize, _v0) {
-		var items = _v0.a;
-		var edges = _v0.b;
-		return A3(
-			$elm$core$List$foldl,
-			F2(
-				function (node, _v1) {
-					var result = _v1.a;
-					var size = _v1.b;
-					if (_Utils_cmp(size, maxSize) < 0) {
-						var childItems = A2($author$project$SimpleTextIndex$Trie$nodeAllItems, maxSize, node);
-						return _Utils_Tuple2(
-							_Utils_ap(result, childItems),
-							size + $elm$core$List$length(childItems));
-					} else {
-						return _Utils_Tuple2(result, size);
-					}
-				}),
-			_Utils_Tuple2(
-				_List_fromArray(
-					[items]),
-				$elm$core$List$length(items)),
-			$elm$core$Dict$values(edges)).a;
-	});
-var $author$project$SimpleTextIndex$Trie$getBranch = F2(
-	function (maxSize, text) {
-		return A2(
-			$elm$core$Basics$composeR,
-			$author$project$SimpleTextIndex$Trie$lookup(text),
-			A2(
-				$elm$core$Basics$composeR,
-				$elm$core$Maybe$map(
-					$author$project$SimpleTextIndex$Trie$nodeAllItems(maxSize)),
-				$elm$core$Maybe$withDefault(_List_Nil)));
-	});
-var $author$project$SimpleTextIndex$intersectionBy = F3(
-	function (getRef, l1, l2) {
-		var l2refs = A2($elm$core$List$map, getRef, l2);
-		return A2(
-			$elm$core$List$filter,
-			function (doc) {
-				return A2(
-					$elm$core$List$member,
-					getRef(doc),
-					l2refs);
-			},
-			l1);
-	});
-var $elm_community$list_extra$List$Extra$uniqueBy = F2(
-	function (f, list) {
-		return A4($elm_community$list_extra$List$Extra$uniqueHelp, f, _List_Nil, list, _List_Nil);
-	});
-var $author$project$SimpleTextIndex$search = F3(
-	function (_v0, text, index) {
-		var cfg = _v0.a;
-		return A2(
-			$elm_community$list_extra$List$Extra$uniqueBy,
-			cfg.ref,
-			A2(
-				$elm$core$Maybe$withDefault,
-				_List_Nil,
-				A2(
-					$elm_community$list_extra$List$Extra$foldl1,
-					$author$project$SimpleTextIndex$intersectionBy(cfg.ref),
-					A2(
-						$elm$core$List$map,
-						function (word) {
-							return $elm$core$List$concat(
-								A3($author$project$SimpleTextIndex$Trie$getBranch, cfg.maxResultSize, word, index));
-						},
-						A2($elm$core$String$split, ' ', text)))));
-	});
-var $author$project$BenchmarkTextIndex$suite = function () {
-	var smallSet = $author$project$BenchmarkTextIndex$sampleDataList(100);
-	var mediumSet = $author$project$BenchmarkTextIndex$sampleDataList(1000);
-	var mediumSetTail = A2($elm$core$List$drop, 900, mediumSet);
-	var emptyIndex = $author$project$SimpleTextIndex$empty;
-	var mediumIndex = A3(
-		$elm$core$List$foldl,
-		$author$project$SimpleTextIndex$add($author$project$BenchmarkTextIndex$sampleDataIndexConfig),
-		emptyIndex,
-		mediumSet);
-	var singletonIndex = A3($author$project$SimpleTextIndex$add, $author$project$BenchmarkTextIndex$sampleDataIndexConfig, $author$project$BenchmarkTextIndex$sampleData0, emptyIndex);
-	var smallIndex = A3(
-		$elm$core$List$foldl,
-		$author$project$SimpleTextIndex$add($author$project$BenchmarkTextIndex$sampleDataIndexConfig),
-		emptyIndex,
-		smallSet);
-	return A2(
-		$elm_explorations$benchmark$Benchmark$describe,
-		'TextIndex',
-		_List_fromArray(
-			[
-				A2(
-				$elm_explorations$benchmark$Benchmark$benchmark,
-				'init empty',
-				function (_v0) {
-					return $author$project$SimpleTextIndex$empty;
-				}),
-				A2(
-				$elm_explorations$benchmark$Benchmark$benchmark,
-				'init & insert 1 item',
-				function (_v1) {
-					return A3($author$project$SimpleTextIndex$add, $author$project$BenchmarkTextIndex$sampleDataIndexConfig, $author$project$BenchmarkTextIndex$sampleData0, $author$project$SimpleTextIndex$empty);
-				}),
-				A2(
-				$elm_explorations$benchmark$Benchmark$benchmark,
-				'search singleton',
-				function (_v2) {
-					return A3($author$project$SimpleTextIndex$search, $author$project$BenchmarkTextIndex$sampleDataIndexConfig, 'sample', singletonIndex);
-				}),
-				A2(
-				$elm_explorations$benchmark$Benchmark$benchmark,
-				'add 1 docs to 100',
-				function (_v3) {
-					return A3($author$project$SimpleTextIndex$add, $author$project$BenchmarkTextIndex$sampleDataIndexConfig, $author$project$BenchmarkTextIndex$sampleData0, smallIndex);
-				}),
-				A2(
-				$elm_explorations$benchmark$Benchmark$benchmark,
-				'add 1 docs to 1000',
-				function (_v4) {
-					return A3($author$project$SimpleTextIndex$add, $author$project$BenchmarkTextIndex$sampleDataIndexConfig, $author$project$BenchmarkTextIndex$sampleData0, mediumIndex);
-				}),
-				A2(
-				$elm_explorations$benchmark$Benchmark$benchmark,
-				'precise search in medium set',
-				function (_v5) {
-					return A3($author$project$SimpleTextIndex$search, $author$project$BenchmarkTextIndex$sampleDataIndexConfig, 'kind', mediumIndex);
-				}),
-				A2(
-				$elm_explorations$benchmark$Benchmark$benchmark,
-				'vague search in medium set',
-				function (_v6) {
-					return A3($author$project$SimpleTextIndex$search, $author$project$BenchmarkTextIndex$sampleDataIndexConfig, 'a', mediumIndex);
-				})
-			]));
+					$elm_explorations$benchmark$Benchmark$describe,
+					'List of List',
+					_List_fromArray(
+						[
+							A2(
+							$elm_explorations$benchmark$Benchmark$benchmark,
+							'first push',
+							function (_v8) {
+								return A2($author$project$BenchmarkLIFO$lifoPush, $author$project$BenchmarkLIFO$alphabet, _List_Nil);
+							}),
+							A2(
+							$elm_explorations$benchmark$Benchmark$benchmark,
+							'push',
+							function (_v9) {
+								return A2($author$project$BenchmarkLIFO$lifoPush, $author$project$BenchmarkLIFO$alphabet, prefilledLIFO);
+							}),
+							A2(
+							$elm_explorations$benchmark$Benchmark$benchmark,
+							'pop',
+							function (_v10) {
+								return $author$project$BenchmarkLIFO$lifoPop(prefilledLIFO);
+							}),
+							A2(
+							$elm_explorations$benchmark$Benchmark$benchmark,
+							'fill&empty',
+							function (_v11) {
+								var l = A3(
+									$elm$core$List$foldl,
+									function (_v13) {
+										return $author$project$BenchmarkLIFO$lifoPush($author$project$BenchmarkLIFO$alphabet);
+									},
+									_List_Nil,
+									A2($elm$core$List$range, 1, 26));
+								return A3(
+									$elm$core$List$foldl,
+									F2(
+										function (_v12, lifo) {
+											return $author$project$BenchmarkLIFO$lifoPop(lifo).b;
+										}),
+									l,
+									A2($elm$core$List$range, 1, 676));
+							})
+						]))
+				])));
 }();
-var $author$project$Main$main = $elm_explorations$benchmark$Benchmark$Runner$program(
-	A2(
-		$elm_explorations$benchmark$Benchmark$describe,
-		'Clad UI benchmarks',
-		_List_fromArray(
-			[$author$project$BenchmarkTextIndex$suite])));
-_Platform_export({'Main':{'init':$author$project$Main$main(
+_Platform_export({'BenchmarkLIFO':{'init':$author$project$BenchmarkLIFO$main(
 	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}});}(this));
 
-  var app = Elm.Main.init({ node: document.getElementById("elm") });
+  var app = Elm.BenchmarkLIFO.init({ node: document.getElementById("elm") });
 }
 catch (e)
 {

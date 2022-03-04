@@ -45,6 +45,11 @@ nodeItems (Node items _) =
     items
 
 
+nodeEdges : Node a -> EdgeSet a
+nodeEdges (Node _ edges) =
+    edges
+
+
 insert : String -> a -> Trie a -> Trie a
 insert =
     String.toList
@@ -99,29 +104,62 @@ findPath path node =
         |> Tuple.second
 
 
-getBranch : String -> Trie a -> List (List a)
-getBranch text =
+getBranch : Int -> String -> Trie a -> List a
+getBranch limit text =
     lookup text
-        >> Maybe.map nodeAllItems
+        >> Maybe.map (nodeAllItems limit >> List.concat)
         >> Maybe.withDefault []
 
 
-visitHelp : List (Node a) -> List (Node a) -> List (Node a)
-visitHelp queue accumulator =
-    case queue of
-        [] ->
-            accumulator
-
-        node :: tail ->
-            case node of
-                Node _ edges ->
-                    visitHelp (Dict.values edges ++ tail) (node :: accumulator)
+type VisitResult a
+    = ContinueVisit a
+    | StopVisit a
 
 
-nodeAllItems : Node a -> List (List a)
-nodeAllItems node =
-    visitHelp [ node ] []
-        |> List.map nodeItems
+visitHelp : ( List (Node a), List (Node a) ) -> (Node a -> b -> VisitResult b) -> b -> b
+visitHelp queues visit previousStep =
+    case queues of
+        ( [], [] ) ->
+            previousStep
+
+        ( [], nextQueue ) ->
+            visitHelp ( nextQueue, [] ) visit previousStep
+
+        ( node :: queue, nextQueue ) ->
+            case visit node previousStep of
+                StopVisit res ->
+                    res
+
+                ContinueVisit res ->
+                    visitHelp
+                        ( queue, List.append (Dict.values (nodeEdges node)) nextQueue )
+                        visit
+                        res
+
+
+nodeAllItems : Int -> Node a -> List (List a)
+nodeAllItems limit node =
+    visitHelp ( [ node ], [] )
+        (\n ( l, s ) ->
+            let
+                items : List a
+                items =
+                    nodeItems n
+
+                size : Int
+                size =
+                    List.length items + s
+            in
+            ( items :: l, size )
+                |> (if size < limit then
+                        ContinueVisit
+
+                    else
+                        StopVisit
+                   )
+        )
+        ( [], 0 )
+        |> Tuple.first
 
 
 lookup : String -> Node a -> Maybe (Node a)

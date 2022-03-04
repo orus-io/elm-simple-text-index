@@ -1,6 +1,6 @@
 module SimpleTextIndex exposing
-    ( Index, Config
-    , empty, config
+    ( Index, empty
+    , Config, config, setMaxResultSize
     , add
     , search
     )
@@ -10,12 +10,9 @@ module SimpleTextIndex exposing
 
 # Types
 
-@docs Index, Config
+@docs Index, empty
 
-
-# Init
-
-@docs empty, config
+@docs Config, config, setMaxResultSize
 
 
 # Insert data
@@ -44,6 +41,7 @@ type Config doc
         { ref : doc -> String
         , fields : List (doc -> String)
         , normalize : String -> String
+        , maxResultSize : Int
         }
 
 
@@ -63,7 +61,18 @@ config { ref, fields, normalize } =
         { ref = ref
         , fields = fields
         , normalize = normalize
+        , maxResultSize = 1000
         }
+
+
+{-| set the maximum number of results to return on a search
+
+This value is indicative only and may be
+
+-}
+setMaxResultSize : Int -> Config a -> Config a
+setMaxResultSize size (Config cfg) =
+    Config { cfg | maxResultSize = size }
 
 
 {-|
@@ -114,7 +123,7 @@ search (Config cfg) text index =
     String.split " " text
         |> List.map
             (\word ->
-                Trie.getBranch word index |> List.concat
+                Trie.getBranch 100 word index
             )
         |> List.foldl1 (intersectionBy cfg.ref)
         |> Maybe.withDefault []

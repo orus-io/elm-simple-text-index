@@ -79,9 +79,6 @@ suite =
         mediumSet =
             sampleDataList 1000
 
-        mediumSetTail =
-            mediumSet |> List.drop 900
-
         -- bigSet =
         -- sampleDataList 10000
         -- hugeSet =
