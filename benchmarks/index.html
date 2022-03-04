@@ -14786,24 +14786,12 @@ var $elm_explorations$benchmark$Benchmark$Runner$program = function (benchmark) 
 			view: $elm_explorations$benchmark$Benchmark$Runner$App$view
 		});
 };
-var $author$project$SimpleTextIndex$Tree$expandPaths = function (s) {
-	var path = $elm$core$String$toList(s);
-	return A2(
-		$elm$core$List$map,
-		function (i) {
-			return A2($elm$core$List$drop, i, path);
-		},
-		A2(
-			$elm$core$List$range,
-			0,
-			$elm$core$List$length(path)));
-};
-var $author$project$SimpleTextIndex$Tree$Node = F2(
+var $author$project$SimpleTextIndex$Trie$Node = F2(
 	function (a, b) {
 		return {$: 'Node', a: a, b: b};
 	});
-var $author$project$SimpleTextIndex$Tree$emptyNode = A2($author$project$SimpleTextIndex$Tree$Node, _List_Nil, $elm$core$Dict$empty);
-var $author$project$SimpleTextIndex$Tree$findPath = F2(
+var $author$project$SimpleTextIndex$Trie$emptyNode = A2($author$project$SimpleTextIndex$Trie$Node, _List_Nil, $elm$core$Dict$empty);
+var $author$project$SimpleTextIndex$Trie$findPath = F2(
 	function (path, node) {
 		return A3(
 			$elm$core$List$foldl,
@@ -14835,25 +14823,25 @@ var $author$project$SimpleTextIndex$Tree$findPath = F2(
 				_List_Nil),
 			path).b;
 	});
-var $author$project$SimpleTextIndex$Tree$nodeAddItem = F2(
+var $author$project$SimpleTextIndex$Trie$nodeAddItem = F2(
 	function (a, _v0) {
 		var items = _v0.a;
 		var targets = _v0.b;
 		return A2(
-			$author$project$SimpleTextIndex$Tree$Node,
+			$author$project$SimpleTextIndex$Trie$Node,
 			A2($elm$core$List$cons, a, items),
 			targets);
 	});
-var $author$project$SimpleTextIndex$Tree$nodeSetEdge = F3(
+var $author$project$SimpleTextIndex$Trie$nodeSetEdge = F3(
 	function (c, target, _v0) {
 		var items = _v0.a;
 		var targets = _v0.b;
 		return A2(
-			$author$project$SimpleTextIndex$Tree$Node,
+			$author$project$SimpleTextIndex$Trie$Node,
 			items,
 			A3($elm$core$Dict$insert, c, target, targets));
 	});
-var $author$project$SimpleTextIndex$Tree$insertPath = F3(
+var $author$project$SimpleTextIndex$Trie$insertPath = F3(
 	function (path, value, tree) {
 		var _v0 = A3(
 			$elm$core$List$foldl,
@@ -14861,7 +14849,7 @@ var $author$project$SimpleTextIndex$Tree$insertPath = F3(
 				function (_v1, child) {
 					var c = _v1.a;
 					var current = _v1.b;
-					var node = A2($elm$core$Maybe$withDefault, $author$project$SimpleTextIndex$Tree$emptyNode, current);
+					var node = A2($elm$core$Maybe$withDefault, $author$project$SimpleTextIndex$Trie$emptyNode, current);
 					if (child.$ === 'Just') {
 						var _v3 = child.a;
 						var childC = _v3.a;
@@ -14869,35 +14857,37 @@ var $author$project$SimpleTextIndex$Tree$insertPath = F3(
 						return $elm$core$Maybe$Just(
 							_Utils_Tuple2(
 								c,
-								A3($author$project$SimpleTextIndex$Tree$nodeSetEdge, childC, childNode, node)));
+								A3($author$project$SimpleTextIndex$Trie$nodeSetEdge, childC, childNode, node)));
 					} else {
 						return $elm$core$Maybe$Just(
 							_Utils_Tuple2(
 								c,
-								A2($author$project$SimpleTextIndex$Tree$nodeAddItem, value, node)));
+								A2($author$project$SimpleTextIndex$Trie$nodeAddItem, value, node)));
 					}
 				}),
 			$elm$core$Maybe$Nothing,
-			A2($author$project$SimpleTextIndex$Tree$findPath, path, tree));
+			A2($author$project$SimpleTextIndex$Trie$findPath, path, tree));
 		if (_v0.$ === 'Just') {
 			var _v4 = _v0.a;
 			var c = _v4.a;
 			var node = _v4.b;
-			return A3($author$project$SimpleTextIndex$Tree$nodeSetEdge, c, node, tree);
+			return A3($author$project$SimpleTextIndex$Trie$nodeSetEdge, c, node, tree);
 		} else {
-			return A2($author$project$SimpleTextIndex$Tree$nodeAddItem, value, tree);
+			return A2($author$project$SimpleTextIndex$Trie$nodeAddItem, value, tree);
 		}
 	});
-var $author$project$SimpleTextIndex$Tree$insert = F3(
-	function (key, value, tree) {
-		return A3(
-			$elm$core$List$foldl,
-			function (path) {
-				return A2($author$project$SimpleTextIndex$Tree$insertPath, path, value);
-			},
-			tree,
-			$author$project$SimpleTextIndex$Tree$expandPaths(key));
-	});
+var $author$project$SimpleTextIndex$Trie$insert = A2($elm$core$Basics$composeR, $elm$core$String$toList, $author$project$SimpleTextIndex$Trie$insertPath);
+var $author$project$SimpleTextIndex$substrings = function (s) {
+	return A2(
+		$elm$core$List$map,
+		function (i) {
+			return A2($elm$core$String$dropLeft, i, s);
+		},
+		A2(
+			$elm$core$List$range,
+			0,
+			$elm$core$String$length(s)));
+};
 var $author$project$SimpleTextIndex$tokenizeWord = function (s) {
 	return (s === '') ? _List_Nil : A2(
 		$elm$core$List$cons,
@@ -14964,18 +14954,22 @@ var $author$project$SimpleTextIndex$add = F3(
 		return A3(
 			$elm$core$List$foldl,
 			function (s) {
-				return A2($author$project$SimpleTextIndex$Tree$insert, s, value);
+				return A2($author$project$SimpleTextIndex$Trie$insert, s, value);
 			},
 			index,
-			A2(
-				$elm$core$List$concatMap,
-				A2($elm$core$Basics$composeR, cfg.normalize, $author$project$SimpleTextIndex$tokenize),
+			$elm_community$list_extra$List$Extra$unique(
 				A2(
-					$elm$core$List$map,
-					function (extract) {
-						return extract(value);
-					},
-					cfg.fields)));
+					$elm$core$List$concatMap,
+					$author$project$SimpleTextIndex$substrings,
+					A2(
+						$elm$core$List$concatMap,
+						A2($elm$core$Basics$composeR, cfg.normalize, $author$project$SimpleTextIndex$tokenize),
+						A2(
+							$elm$core$List$map,
+							function (extract) {
+								return extract(value);
+							},
+							cfg.fields)))));
 	});
 var $elm_explorations$benchmark$Benchmark$Status$Cold = {$: 'Cold'};
 var $elm_explorations$benchmark$Benchmark$LowLevel$operation = function (fn) {
@@ -14989,8 +14983,8 @@ var $elm_explorations$benchmark$Benchmark$benchmark = F2(
 			$elm_explorations$benchmark$Benchmark$LowLevel$operation(fn),
 			$elm_explorations$benchmark$Benchmark$Status$Cold);
 	});
-var $author$project$SimpleTextIndex$Tree$empty = $author$project$SimpleTextIndex$Tree$emptyNode;
-var $author$project$SimpleTextIndex$empty = $author$project$SimpleTextIndex$Tree$empty;
+var $author$project$SimpleTextIndex$Trie$empty = $author$project$SimpleTextIndex$Trie$emptyNode;
+var $author$project$SimpleTextIndex$empty = $author$project$SimpleTextIndex$Trie$empty;
 var $author$project$BenchmarkTextIndex$sampleData0 = {description: 'It\'s one of a kind !', id: 'id0', name: 'sample 0'};
 var $author$project$SimpleTextIndex$Config = function (a) {
 	return {$: 'Config', a: a};
@@ -15288,27 +15282,14 @@ var $elm_community$list_extra$List$Extra$foldl1 = F2(
 				A3($elm$core$List$foldl, func, x, xs));
 		}
 	});
-var $author$project$SimpleTextIndex$intersectionBy = F3(
-	function (getRef, l1, l2) {
-		var l2refs = A2($elm$core$List$map, getRef, l2);
-		return A2(
-			$elm$core$List$filter,
-			function (doc) {
-				return A2(
-					$elm$core$List$member,
-					getRef(doc),
-					l2refs);
-			},
-			l1);
-	});
-var $author$project$SimpleTextIndex$Tree$lookup = F2(
+var $author$project$SimpleTextIndex$Trie$lookup = F2(
 	function (text, node) {
 		return (text === '') ? $elm$core$Maybe$Just(node) : A2(
 			$elm$core$Maybe$andThen,
 			$elm$core$Tuple$second,
 			$elm$core$List$head(
 				A2(
-					$author$project$SimpleTextIndex$Tree$findPath,
+					$author$project$SimpleTextIndex$Trie$findPath,
 					$elm$core$String$toList(text),
 					node)));
 	});
@@ -15322,7 +15303,7 @@ var $elm$core$Dict$values = function (dict) {
 		_List_Nil,
 		dict);
 };
-var $author$project$SimpleTextIndex$Tree$nodeAllItems = F2(
+var $author$project$SimpleTextIndex$Trie$nodeAllItems = F2(
 	function (maxSize, _v0) {
 		var items = _v0.a;
 		var edges = _v0.b;
@@ -15333,7 +15314,7 @@ var $author$project$SimpleTextIndex$Tree$nodeAllItems = F2(
 					var result = _v1.a;
 					var size = _v1.b;
 					if (_Utils_cmp(size, maxSize) < 0) {
-						var childItems = A2($author$project$SimpleTextIndex$Tree$nodeAllItems, maxSize, node);
+						var childItems = A2($author$project$SimpleTextIndex$Trie$nodeAllItems, maxSize, node);
 						return _Utils_Tuple2(
 							_Utils_ap(result, childItems),
 							size + $elm$core$List$length(childItems));
@@ -15347,19 +15328,29 @@ var $author$project$SimpleTextIndex$Tree$nodeAllItems = F2(
 				$elm$core$List$length(items)),
 			$elm$core$Dict$values(edges)).a;
 	});
-var $author$project$SimpleTextIndex$Tree$search = F2(
+var $author$project$SimpleTextIndex$Trie$getBranch = F2(
 	function (maxSize, text) {
 		return A2(
 			$elm$core$Basics$composeR,
-			$author$project$SimpleTextIndex$Tree$lookup(text),
+			$author$project$SimpleTextIndex$Trie$lookup(text),
 			A2(
 				$elm$core$Basics$composeR,
 				$elm$core$Maybe$map(
-					$author$project$SimpleTextIndex$Tree$nodeAllItems(maxSize)),
-				A2(
-					$elm$core$Basics$composeR,
-					$elm$core$Maybe$map($elm$core$List$concat),
-					$elm$core$Maybe$withDefault(_List_Nil))));
+					$author$project$SimpleTextIndex$Trie$nodeAllItems(maxSize)),
+				$elm$core$Maybe$withDefault(_List_Nil)));
+	});
+var $author$project$SimpleTextIndex$intersectionBy = F3(
+	function (getRef, l1, l2) {
+		var l2refs = A2($elm$core$List$map, getRef, l2);
+		return A2(
+			$elm$core$List$filter,
+			function (doc) {
+				return A2(
+					$elm$core$List$member,
+					getRef(doc),
+					l2refs);
+			},
+			l1);
 	});
 var $elm_community$list_extra$List$Extra$uniqueBy = F2(
 	function (f, list) {
@@ -15380,7 +15371,8 @@ var $author$project$SimpleTextIndex$search = F3(
 					A2(
 						$elm$core$List$map,
 						function (word) {
-							return A3($author$project$SimpleTextIndex$Tree$search, cfg.maxResultSize, word, index);
+							return $elm$core$List$concat(
+								A3($author$project$SimpleTextIndex$Trie$getBranch, cfg.maxResultSize, word, index));
 						},
 						A2($elm$core$String$split, ' ', text)))));
 	});

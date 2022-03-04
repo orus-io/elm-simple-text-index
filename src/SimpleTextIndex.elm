@@ -30,7 +30,7 @@ module SimpleTextIndex exposing
 -}
 
 import List.Extra as List
-import SimpleTextIndex.Tree as Tree exposing (Tree)
+import SimpleTextIndex.Trie as Trie exposing (Trie)
 
 
 {-|
@@ -84,7 +84,7 @@ setMaxResultSize size (Config cfg) =
 
 -}
 type alias Index doc =
-    Tree doc
+    Trie doc
 
 
 {-|
@@ -94,7 +94,13 @@ type alias Index doc =
 -}
 empty : Index doc
 empty =
-    Tree.empty
+    Trie.empty
+
+
+substrings : String -> List String
+substrings s =
+    List.range 0 (String.length s)
+        |> List.map (\i -> String.dropLeft i s)
 
 
 {-|
@@ -107,9 +113,11 @@ add (Config cfg) value index =
     List.map (\extract -> extract value)
         cfg.fields
         |> List.concatMap (cfg.normalize >> tokenize)
+        |> List.concatMap substrings
+        |> List.unique
         |> List.foldl
             (\s ->
-                Tree.insert s value
+                Trie.insert s value
             )
             index
 
@@ -122,7 +130,10 @@ add (Config cfg) value index =
 search : Config doc -> String -> Index doc -> List doc
 search (Config cfg) text index =
     String.split " " text
-        |> List.map (\word -> Tree.search cfg.maxResultSize word index)
+        |> List.map
+            (\word ->
+                Trie.getBranch cfg.maxResultSize word index |> List.concat
+            )
         |> List.foldl1 (intersectionBy cfg.ref)
         |> Maybe.withDefault []
         |> List.uniqueBy cfg.ref

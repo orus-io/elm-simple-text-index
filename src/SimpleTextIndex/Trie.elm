@@ -1,8 +1,9 @@
-module SimpleTextIndex.Tree exposing
-    ( Tree
+module SimpleTextIndex.Trie exposing
+    ( Trie
     , empty
+    , get
+    , getBranch
     , insert
-    , search
     )
 
 import Dict exposing (Dict)
@@ -16,11 +17,11 @@ type alias EdgeSet a =
     Dict Char (Node a)
 
 
-type alias Tree a =
+type alias Trie a =
     Node a
 
 
-empty : Tree a
+empty : Trie a
 empty =
     emptyNode
 
@@ -40,28 +41,18 @@ nodeAddItem a (Node items targets) =
     Node (a :: items) targets
 
 
-expandPaths : String -> List (List Char)
-expandPaths s =
-    let
-        path : List Char
-        path =
-            String.toList s
-    in
-    if List.length path == 0 then
-        [ path ]
-
-    else
-        List.range 0 (List.length path - 1)
-            |> List.map (\i -> List.drop i path)
+nodeItems : Node a -> List a
+nodeItems (Node items _) =
+    items
 
 
-insert : String -> a -> Tree a -> Tree a
-insert key value tree =
-    expandPaths key
-        |> List.foldl (\path -> insertPath path value) tree
+insert : String -> a -> Trie a -> Trie a
+insert =
+    String.toList
+        >> insertPath
 
 
-insertPath : List Char -> a -> Tree a -> Tree a
+insertPath : List Char -> a -> Trie a -> Trie a
 insertPath path value tree =
     case
         findPath path tree
@@ -109,6 +100,20 @@ findPath path node =
         |> Tuple.second
 
 
+get : String -> Trie a -> List a
+get text =
+    lookup text
+        >> Maybe.map nodeItems
+        >> Maybe.withDefault []
+
+
+getBranch : Int -> String -> Trie a -> List (List a)
+getBranch maxSize text =
+    lookup text
+        >> Maybe.map (nodeAllItems maxSize)
+        >> Maybe.withDefault []
+
+
 nodeAllItems : Int -> Node a -> List (List a)
 nodeAllItems maxSize (Node items edges) =
     edges
@@ -138,11 +143,3 @@ lookup text node =
         findPath (String.toList text) node
             |> List.head
             |> Maybe.andThen Tuple.second
-
-
-search : Int -> String -> Tree a -> List a
-search maxSize text =
-    lookup text
-        >> Maybe.map (nodeAllItems maxSize)
-        >> Maybe.map List.concat
-        >> Maybe.withDefault []

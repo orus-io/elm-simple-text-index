@@ -51,10 +51,16 @@ suite =
                 Index.empty
                     |> indexSearch "anything"
                     |> Expect.equalLists []
-        , test "add&search" <|
+        , test "search 1 word" <|
             \_ ->
                 Index.empty
                     |> indexAdd sample0
                     |> indexSearch "ampl"
+                    |> Expect.equalLists [ sample0 ]
+        , test "search multiple words" <|
+            \_ ->
+                Index.empty
+                    |> indexAdd sample0
+                    |> indexSearch "sample one kind"
                     |> Expect.equalLists [ sample0 ]
         ]
