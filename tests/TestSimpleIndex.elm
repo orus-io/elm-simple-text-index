@@ -33,34 +33,24 @@ sample0 =
     }
 
 
-indexAdd : SampleData -> Index.Index SampleData -> Index.Index SampleData
-indexAdd =
-    Index.add sampleDataIndexConfig
-
-
-indexSearch : String -> Index.Index SampleData -> List SampleData
-indexSearch =
-    Index.search sampleDataIndexConfig
-
-
 suite : Test
 suite =
     describe "TextSimpleIndex"
         [ test "search in empty index returns nothing" <|
             \_ ->
-                Index.empty
-                    |> indexSearch "anything"
+                Index.new sampleDataIndexConfig
+                    |> Index.search "anything"
                     |> Expect.equalLists []
         , test "search 1 word" <|
             \_ ->
-                Index.empty
-                    |> indexAdd sample0
-                    |> indexSearch "ampl"
+                Index.new sampleDataIndexConfig
+                    |> Index.add sample0
+                    |> Index.search "ampl"
                     |> Expect.equalLists [ sample0 ]
         , test "search multiple words" <|
             \_ ->
-                Index.empty
-                    |> indexAdd sample0
-                    |> indexSearch "sample one kind"
+                Index.new sampleDataIndexConfig
+                    |> Index.add sample0
+                    |> Index.search "sample one kind"
                     |> Expect.equalLists [ sample0 ]
         ]

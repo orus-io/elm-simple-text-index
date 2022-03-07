@@ -1,6 +1,6 @@
 module SimpleTextIndex exposing
-    ( Index, empty
-    , Config, config, setMaxResultSize
+    ( Index, new
+    , Config, config, setMaxResultSize, setConfig
     , add
     , search
     )
@@ -10,12 +10,12 @@ module SimpleTextIndex exposing
 
 # Init
 
-@docs Index, empty
+@docs Index, new
 
 
 # Configure
 
-@docs Config, config, setMaxResultSize
+@docs Config, config, setMaxResultSize, setConfig
 
 
 # Insert data
@@ -93,21 +93,28 @@ setMaxResultSize size (Config cfg) =
 {-| An Index holds data to quickly find doc document given doc substring of its
 indexed fields
 -}
-type alias Index doc =
-    Trie doc
+type Index doc
+    = Index (Config doc) (Trie doc)
 
 
 {-| Creates doc new empty Index
 -}
-empty : Index doc
-empty =
-    Trie.empty
+new : Config doc -> Index doc
+new cfg =
+    Index cfg Trie.empty
+
+
+{-| Update the index configuration
+-}
+setConfig : Config doc -> Index doc -> Index doc
+setConfig cfg (Index _ trie) =
+    Index cfg trie
 
 
 {-| Add a document to an index
 -}
-add : Config doc -> doc -> Index doc -> Index doc
-add (Config cfg) value index =
+add : doc -> Index doc -> Index doc
+add value (Index (Config cfg) trie) =
     List.map (\extract -> extract value)
         cfg.fields
         |> List.concatMap (cfg.normalize >> tokenize)
@@ -116,17 +123,18 @@ add (Config cfg) value index =
             (\s ->
                 Trie.insert s value
             )
-            index
+            trie
+        |> Index (Config cfg)
 
 
 {-| Search a document in the index
 -}
-search : Config doc -> String -> Index doc -> List doc
-search (Config cfg) text index =
+search : String -> Index doc -> List doc
+search text (Index (Config cfg) trie) =
     String.split " " text
         |> List.map
             (\word ->
-                Trie.getBranch 100 word index
+                Trie.getBranch 100 word trie
             )
         |> List.foldl1 (intersectionBy cfg.ref)
         |> Maybe.withDefault []

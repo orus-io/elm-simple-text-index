@@ -84,53 +84,53 @@ suite =
         -- hugeSet =
         --   sampleDataList 100000
         emptyIndex =
-            Index.empty
+            Index.new sampleDataIndexConfig
 
         singletonIndex =
             emptyIndex
-                |> Index.add sampleDataIndexConfig sampleData0
+                |> Index.add sampleData0
 
         smallIndex =
             smallSet
-                |> List.foldl (Index.add sampleDataIndexConfig) emptyIndex
+                |> List.foldl Index.add emptyIndex
 
         mediumIndex =
             mediumSet
-                |> List.foldl (Index.add sampleDataIndexConfig) emptyIndex
+                |> List.foldl Index.add emptyIndex
 
         -- bigIndex =
         -- bigSet
-        -- |> List.foldl (Index.add sampleDataIndexConfig) emptyIndex
+        -- |> List.foldl (Index.add ) emptyIndex
         -- hugeIndex =
         -- hugeSet
-        -- |> List.foldl (Index.add sampleDataIndexConfig) emptyIndex
+        -- |> List.foldl (Index.add ) emptyIndex
     in
     describe "TextIndex"
         [ -- nest as many descriptions as you like
           benchmark "init empty" <|
-            \_ -> Index.empty
+            \_ -> Index.new sampleDataIndexConfig
         , benchmark "init & insert 1 item" <|
             \_ ->
-                Index.empty
-                    |> Index.add sampleDataIndexConfig sampleData0
+                Index.new sampleDataIndexConfig
+                    |> Index.add sampleData0
         , benchmark "search singleton" <|
             \_ ->
                 singletonIndex
-                    |> Index.search sampleDataIndexConfig "sample"
+                    |> Index.search "sample"
         , benchmark "add 1 docs to 100" <|
             \_ ->
                 smallIndex
-                    |> Index.add sampleDataIndexConfig sampleData0
+                    |> Index.add sampleData0
         , benchmark "add 1 docs to 1000" <|
             \_ ->
                 mediumIndex
-                    |> Index.add sampleDataIndexConfig sampleData0
+                    |> Index.add sampleData0
         , benchmark "precise search in medium set" <|
             \_ ->
                 mediumIndex
-                    |> Index.search sampleDataIndexConfig "kind"
+                    |> Index.search "kind"
         , benchmark "vague search in medium set" <|
             \_ ->
                 mediumIndex
-                    |> Index.search sampleDataIndexConfig "a"
+                    |> Index.search "a"
         ]

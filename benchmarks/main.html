@@ -14786,6 +14786,13 @@ var $elm_explorations$benchmark$Benchmark$Runner$program = function (benchmark) 
 			view: $elm_explorations$benchmark$Benchmark$Runner$App$view
 		});
 };
+var $author$project$SimpleTextIndex$Config = function (a) {
+	return {$: 'Config', a: a};
+};
+var $author$project$SimpleTextIndex$Index = F2(
+	function (a, b) {
+		return {$: 'Index', a: a, b: b};
+	});
 var $author$project$SimpleTextIndex$Trie$Node = F2(
 	function (a, b) {
 		return {$: 'Node', a: a, b: b};
@@ -14955,25 +14962,29 @@ var $author$project$Internal$tokenize = function (value) {
 				trim,
 				A2($elm$core$String$split, ' ', value))));
 };
-var $author$project$SimpleTextIndex$add = F3(
-	function (_v0, value, index) {
-		var cfg = _v0.a;
-		return A3(
-			$elm$core$List$foldl,
-			function (s) {
-				return A2($author$project$SimpleTextIndex$Trie$insert, s, value);
-			},
-			index,
-			$elm_community$list_extra$List$Extra$unique(
-				A2(
-					$elm$core$List$concatMap,
-					A2($elm$core$Basics$composeR, cfg.normalize, $author$project$Internal$tokenize),
+var $author$project$SimpleTextIndex$add = F2(
+	function (value, _v0) {
+		var cfg = _v0.a.a;
+		var trie = _v0.b;
+		return A2(
+			$author$project$SimpleTextIndex$Index,
+			$author$project$SimpleTextIndex$Config(cfg),
+			A3(
+				$elm$core$List$foldl,
+				function (s) {
+					return A2($author$project$SimpleTextIndex$Trie$insert, s, value);
+				},
+				trie,
+				$elm_community$list_extra$List$Extra$unique(
 					A2(
-						$elm$core$List$map,
-						function (extract) {
-							return extract(value);
-						},
-						cfg.fields))));
+						$elm$core$List$concatMap,
+						A2($elm$core$Basics$composeR, cfg.normalize, $author$project$Internal$tokenize),
+						A2(
+							$elm$core$List$map,
+							function (extract) {
+								return extract(value);
+							},
+							cfg.fields)))));
 	});
 var $elm_explorations$benchmark$Benchmark$Status$Cold = {$: 'Cold'};
 var $elm_explorations$benchmark$Benchmark$LowLevel$operation = function (fn) {
@@ -14988,11 +14999,10 @@ var $elm_explorations$benchmark$Benchmark$benchmark = F2(
 			$elm_explorations$benchmark$Benchmark$Status$Cold);
 	});
 var $author$project$SimpleTextIndex$Trie$empty = $author$project$SimpleTextIndex$Trie$emptyNode;
-var $author$project$SimpleTextIndex$empty = $author$project$SimpleTextIndex$Trie$empty;
-var $author$project$BenchmarkTextIndex$sampleData0 = {description: 'It\'s one of a kind !', id: 'id0', name: 'sample 0'};
-var $author$project$SimpleTextIndex$Config = function (a) {
-	return {$: 'Config', a: a};
+var $author$project$SimpleTextIndex$new = function (cfg) {
+	return A2($author$project$SimpleTextIndex$Index, cfg, $author$project$SimpleTextIndex$Trie$empty);
 };
+var $author$project$BenchmarkTextIndex$sampleData0 = {description: 'It\'s one of a kind !', id: 'id0', name: 'sample 0'};
 var $author$project$SimpleTextIndex$config = function (_v0) {
 	var ref = _v0.ref;
 	var fields = _v0.fields;
@@ -15418,9 +15428,10 @@ var $elm_community$list_extra$List$Extra$uniqueBy = F2(
 	function (f, list) {
 		return A4($elm_community$list_extra$List$Extra$uniqueHelp, f, _List_Nil, list, _List_Nil);
 	});
-var $author$project$SimpleTextIndex$search = F3(
-	function (_v0, text, index) {
-		var cfg = _v0.a;
+var $author$project$SimpleTextIndex$search = F2(
+	function (text, _v0) {
+		var cfg = _v0.a.a;
+		var trie = _v0.b;
 		return A2(
 			$elm_community$list_extra$List$Extra$uniqueBy,
 			cfg.ref,
@@ -15433,25 +15444,17 @@ var $author$project$SimpleTextIndex$search = F3(
 					A2(
 						$elm$core$List$map,
 						function (word) {
-							return A3($author$project$SimpleTextIndex$Trie$getBranch, 100, word, index);
+							return A3($author$project$SimpleTextIndex$Trie$getBranch, 100, word, trie);
 						},
 						A2($elm$core$String$split, ' ', text)))));
 	});
 var $author$project$BenchmarkTextIndex$suite = function () {
 	var smallSet = $author$project$BenchmarkTextIndex$sampleDataList(100);
 	var mediumSet = $author$project$BenchmarkTextIndex$sampleDataList(1000);
-	var emptyIndex = $author$project$SimpleTextIndex$empty;
-	var mediumIndex = A3(
-		$elm$core$List$foldl,
-		$author$project$SimpleTextIndex$add($author$project$BenchmarkTextIndex$sampleDataIndexConfig),
-		emptyIndex,
-		mediumSet);
-	var singletonIndex = A3($author$project$SimpleTextIndex$add, $author$project$BenchmarkTextIndex$sampleDataIndexConfig, $author$project$BenchmarkTextIndex$sampleData0, emptyIndex);
-	var smallIndex = A3(
-		$elm$core$List$foldl,
-		$author$project$SimpleTextIndex$add($author$project$BenchmarkTextIndex$sampleDataIndexConfig),
-		emptyIndex,
-		smallSet);
+	var emptyIndex = $author$project$SimpleTextIndex$new($author$project$BenchmarkTextIndex$sampleDataIndexConfig);
+	var mediumIndex = A3($elm$core$List$foldl, $author$project$SimpleTextIndex$add, emptyIndex, mediumSet);
+	var singletonIndex = A2($author$project$SimpleTextIndex$add, $author$project$BenchmarkTextIndex$sampleData0, emptyIndex);
+	var smallIndex = A3($elm$core$List$foldl, $author$project$SimpleTextIndex$add, emptyIndex, smallSet);
 	return A2(
 		$elm_explorations$benchmark$Benchmark$describe,
 		'TextIndex',
@@ -15461,43 +15464,46 @@ var $author$project$BenchmarkTextIndex$suite = function () {
 				$elm_explorations$benchmark$Benchmark$benchmark,
 				'init empty',
 				function (_v0) {
-					return $author$project$SimpleTextIndex$empty;
+					return $author$project$SimpleTextIndex$new($author$project$BenchmarkTextIndex$sampleDataIndexConfig);
 				}),
 				A2(
 				$elm_explorations$benchmark$Benchmark$benchmark,
 				'init & insert 1 item',
 				function (_v1) {
-					return A3($author$project$SimpleTextIndex$add, $author$project$BenchmarkTextIndex$sampleDataIndexConfig, $author$project$BenchmarkTextIndex$sampleData0, $author$project$SimpleTextIndex$empty);
+					return A2(
+						$author$project$SimpleTextIndex$add,
+						$author$project$BenchmarkTextIndex$sampleData0,
+						$author$project$SimpleTextIndex$new($author$project$BenchmarkTextIndex$sampleDataIndexConfig));
 				}),
 				A2(
 				$elm_explorations$benchmark$Benchmark$benchmark,
 				'search singleton',
 				function (_v2) {
-					return A3($author$project$SimpleTextIndex$search, $author$project$BenchmarkTextIndex$sampleDataIndexConfig, 'sample', singletonIndex);
+					return A2($author$project$SimpleTextIndex$search, 'sample', singletonIndex);
 				}),
 				A2(
 				$elm_explorations$benchmark$Benchmark$benchmark,
 				'add 1 docs to 100',
 				function (_v3) {
-					return A3($author$project$SimpleTextIndex$add, $author$project$BenchmarkTextIndex$sampleDataIndexConfig, $author$project$BenchmarkTextIndex$sampleData0, smallIndex);
+					return A2($author$project$SimpleTextIndex$add, $author$project$BenchmarkTextIndex$sampleData0, smallIndex);
 				}),
 				A2(
 				$elm_explorations$benchmark$Benchmark$benchmark,
 				'add 1 docs to 1000',
 				function (_v4) {
-					return A3($author$project$SimpleTextIndex$add, $author$project$BenchmarkTextIndex$sampleDataIndexConfig, $author$project$BenchmarkTextIndex$sampleData0, mediumIndex);
+					return A2($author$project$SimpleTextIndex$add, $author$project$BenchmarkTextIndex$sampleData0, mediumIndex);
 				}),
 				A2(
 				$elm_explorations$benchmark$Benchmark$benchmark,
 				'precise search in medium set',
 				function (_v5) {
-					return A3($author$project$SimpleTextIndex$search, $author$project$BenchmarkTextIndex$sampleDataIndexConfig, 'kind', mediumIndex);
+					return A2($author$project$SimpleTextIndex$search, 'kind', mediumIndex);
 				}),
 				A2(
 				$elm_explorations$benchmark$Benchmark$benchmark,
 				'vague search in medium set',
 				function (_v6) {
-					return A3($author$project$SimpleTextIndex$search, $author$project$BenchmarkTextIndex$sampleDataIndexConfig, 'a', mediumIndex);
+					return A2($author$project$SimpleTextIndex$search, 'a', mediumIndex);
 				})
 			]));
 }();
