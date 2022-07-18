@@ -131,7 +131,9 @@ add value (Index (Config cfg) trie) =
 -}
 search : String -> Index doc -> List doc
 search text (Index (Config cfg) trie) =
-    String.split " " text
+    text
+        |> cfg.normalize
+        |> String.split " "
         |> List.map
             (\word ->
                 Trie.getBranch 100 word trie
