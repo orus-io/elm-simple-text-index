@@ -65,3 +65,9 @@ Searching a long word is very fast (<3µs), and searching a single letter slower
 
 You can run the benchmarks yourself by viewing the 'benchmarks/main.html' file
 in a browser.
+
+## Changes
+
+### v1.0.1
+
+- normalize text query before search
